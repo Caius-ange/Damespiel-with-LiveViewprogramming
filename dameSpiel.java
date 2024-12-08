@@ -1,10 +1,18 @@
 import java.util.ArrayList;
 
+enum SteinTyp {
+    STEIN, DAME
+}
+
 public class dameSpiel {
     
 }
 
- record Steine(String color){
+ record Steine(String color, SteinTyp typ){
+    boolean isDame() {
+        return typ == SteinTyp.DAME;
+    }
+
    boolean isWhite(){
     return color.equals("w");
    }
@@ -13,9 +21,13 @@ public class dameSpiel {
     return color.equals("b");
    }
 
+   Steine promoteToDame() {
+      return new Steine(this.color, SteinTyp.DAME);
+    }
+
    public String toString(){
-    return color;
-   }
+      return typ == SteinTyp.DAME ? color.toUpperCase() : color;
+    }
 
 }
 
@@ -44,7 +56,6 @@ class Square{
 
     void removeSteine(){
         this.stein =null;
-       // System.out.println("Le pion a été retiré de la case (" + zeile + ", " + spalte + ")");
     }
 
     @Override
@@ -73,13 +84,15 @@ class BrettSpiel{
                 squares[x][y] = new Square(x, y); 
                 if ((x + y) % 2 == 1) {
                     if (x < 3) {
-                        Steine stein = new Steine("b");
+                        Steine stein = new Steine("b",SteinTyp. STEIN);
                     squares[x][y].setSteine(stein);
                     spieler1.getInitStein().add(stein);
                     } else if (x > 4) {
-                        Steine stein = new Steine("w");
+                        Steine stein = new Steine("w" , SteinTyp.STEIN);
                         squares[x][y].setSteine(stein);
-                        spieler2.getInitStein().add(stein);                    }
+                        spieler2.getInitStein().add(stein);                    
+                    }
+
                 }
             }
         }
@@ -113,10 +126,7 @@ class BrettSpiel{
     }
 
     void wechselSpieler(){
-    //System.out.println("Changement de joueur...");
     aktuellerSpieler = (aktuellerSpieler == spieler1) ? spieler2 : spieler1;
-    //System.out.println("Joueur actuel : " + aktuellerSpieler.getName());
-
     }
 
     int[][] zeigeZugMoeglichkeit(int x ,int y){
@@ -132,25 +142,29 @@ class BrettSpiel{
         throw new IllegalArgumentException("Das feld ist leer");
        }
 
-       int[] richtung = {-1,1};
-       for(int dx:richtung){
-         for(int dy:richtung){
-           int newX = x+dx;
-           int newY = y+dy;
-          if(isBewegung(newX, newY) &&  squares[newX][newY].isEmpty()){
-            moeglicheBewegung.add(new int[]{newX,newY});
-          } else if(isBewegung(newX + dx, newY + dy)){
-            int midX = newX;
-            int midY = newY;
-            Square sMid = squares[midX][midY];
-              if(!sMid.isEmpty() && !sMid.getSteine().color().equals(aktuellerSpieler.getFarbe()) && squares[newX + dx][newY + dy].isEmpty()) {
-                moeglicheBewegung.add(new int[]{newX + dx, newY + dy});
-               }
+       Steine stein = square.getSteine();
+       int richtung = stein.isWhite() ? -1 : 1; // Weiß bewegt sich nach oben (-1), Schwarz nach unten (+1)
+       int[] dx = stein.isDame() ? new int[]{-1, 1} : new int[]{richtung}; 
+       int[] dy = {-1, 1};    // Diagonale links (-1) und rechts (+1)
+
+      for (int dirX : dx) {
+          for (int dirY : dy) {
+              int newX = x + dirX;
+              int newY = y + dirY;
+              if (isBewegung(newX, newY) && squares[newX][newY].isEmpty()) {
+                  moeglicheBewegung.add(new int[]{newX, newY});
+                } else if (isBewegung(newX + dirX, newY + dirY)) {
+                  int midX = newX;
+                  int midY = newY;
+                  Square sMid = squares[midX][midY];
+                  if (!sMid.isEmpty() && !sMid.getSteine().color().equals(aktuellerSpieler.getFarbe()) && squares[newX + dirX][newY + dirY].isEmpty()) {
+                     moeglicheBewegung.add(new int[]{newX + dirX, newY + dirY});
+                  }
+                }
             }
-         }
         }
 
-        if (moeglicheBewegung.size() == 0) {
+        if (moeglicheBewegung.isEmpty()) {
         return new int[0][0];
         }
 
@@ -160,6 +174,43 @@ class BrettSpiel{
         }
         return ergebnis;
     }
+
+    boolean play(int x, int y, int v, int w){
+        boolean erfolgsbewegung = false;
+
+      try {
+        erfolgsbewegung = moveSteine(x, y, v, w); 
+        }  catch (IllegalArgumentException e) {
+          System.out.println("Fehler: " + e.getMessage());
+           return false; 
+        }
+
+      if (erfolgsbewegung) {
+          if (isGameOver()) {
+            System.out.println("Spiel ist vorbei! Gewinner: " + getGewinner());
+            return false; 
+            }
+
+          wechselSpieler(); 
+
+        }
+
+        return true;
+    }
+
+    String getGewinner() {
+        if (getAnzahlStein(spieler1) == 0) {
+            return spieler2.getName();
+        } else {
+            return spieler1.getName();
+        }
+    }
+
+    boolean isGameOver(){
+        return getAnzahlStein(spieler1) == 0 || getAnzahlStein(spieler2) == 0;
+    }
+
+
 
     boolean moveSteine(int x, int y, int v, int w){
         if(!isBewegung(x,y) || !isBewegung(v,w)){
@@ -172,9 +223,6 @@ class BrettSpiel{
         if(s1.isEmpty() || !s1.getSteine().color().equals(aktuellerSpieler.getFarbe())){
             throw new IllegalArgumentException("es gibt keinen Stein zu bewegen oder Sie sind nicht dran");
         }
-
-       // System.out.println("Joueur actuel : " + aktuellerSpieler.getName() + " tente de déplacer " + s1.getSteine().toString());
-
 
         int[][] moeglicheBewegung = zeigeZugMoeglichkeit(x,y);
         boolean zugErlaubt = false;
@@ -189,70 +237,67 @@ class BrettSpiel{
           throw new IllegalArgumentException("Die Bewegung ist nicht erlaubt");
         }
 
-        if(Math.abs(v - x) == 2 && Math.abs(w - y) == 2){
-            int midX = (x+v) / 2;
-            int midY = (y+w) / 2;
-            Square sMid = squares[midX][midY];
-    
-             if(!sMid.isEmpty() && !sMid.getSteine().color().equals(aktuellerSpieler.getFarbe())){
-                Steine capturedStein = sMid.getSteine();
-                sMid.removeSteine();
-                Spieler gegner = (aktuellerSpieler == spieler1) ? spieler2 : spieler1;
-                gegner.zurueckZiehenStein((capturedStein));
-                aktuellerSpieler.addPunkte();
-    
-             }
-    
-            }
+        steinSchlagen(x, y, v, w);
 
-
-       /*  if(!s2.isEmpty()){
-            throw new IllegalArgumentException("Das Feld ist besetzt");
-        }
-*/
         s2.setSteine(s1.getSteine());
         s1.removeSteine();
-        wechselSpieler();
+
+        Steine stein = s2.getSteine();
+        if ((stein.isWhite() && v == 0) || (stein.isBlack() && v == 7)) {
+           s2.setSteine(stein.promoteToDame()); 
+        }
+
         return true;
     }
 
-    boolean isGameOver(){
-        while(true){
-           if(getAnzahlStein(spieler1) == 0 || getAnzahlStein(spieler2) == 0){
-            return true; 
-            
-           }
+    
+    void steinSchlagen(int x, int y, int v, int w){
+        if(Math.abs(v - x) == 2 && Math.abs(w - y) == 2){
+          int midX = (x+v) / 2;
+          int midY = (y+w) / 2;
+          Square sMid = squares[midX][midY];
+
+           if(!sMid.isEmpty() && !sMid.getSteine().color().equals(aktuellerSpieler.getFarbe())){
+              Steine capturedStein = sMid.getSteine();
+              sMid.removeSteine();
+              Spieler gegner = (aktuellerSpieler == spieler1) ? spieler2 : spieler1;
+              gegner.zurueckZiehenStein((capturedStein));
+              aktuellerSpieler.addPunkte();
+
+            }
         }
     }
 
  @Override
 
    public String toString(){
-    StringBuilder builder = new StringBuilder();
+      StringBuilder builder = new StringBuilder();
 
-    builder.append("Aktueller Spieler : ").append(aktuellerSpieler.toString()).append("\n");
+      builder.append("Aktueller Spieler : ").append(aktuellerSpieler.toString()).append("\n");
 
-
-    builder.append("\n");
-
-   
-    for (int y = 0; y < 8; y++) {
-        builder.append(y).append(" ");
-    }
-    builder.append("\n").append("\n");
-    //builder.append("  ");
-    for (int x = 0; x < 8; x++) {
-        
-        for (int y = 0; y < 8; y++) {
-            builder.append(squares[x][y].toString()).append(" ");  
+      builder.append("\n");
+      builder.append(" ").append(" ");
+      for (int y = 0; y < 8; y++) {
+         builder.append(y).append(" ");
         }
-        builder.append("\n"); 
-    }
-    
-    return builder.toString();
-    
 
-   }
+      builder.append("\n").append("\n");
+
+      for (int x = 0; x < 8; x++) {
+         
+         builder.append(x).append(" ");
+
+         for(int y = 0; y < 8; y++) {
+             builder.append(squares[x][y].toString()).append(" ");  
+            }
+
+          builder.append("\n"); 
+        }
+    
+      return builder.toString();
+    
+    }
+
 }
 
 
@@ -260,15 +305,13 @@ class Spieler{
     private String name;
     private String farbe;
     private int punkte;
-     ArrayList<Steine> initstein;
-     //boolean hatGespielt;
+    ArrayList<Steine> initstein;
 
     Spieler(String name , String farbe){
         this.name = name;
         this.farbe = farbe;
         this.punkte = 0;
         initstein = new ArrayList<>();
-        //hatGespielt = false;
     }
 
     String getFarbe(){
@@ -290,38 +333,16 @@ class Spieler{
 
     void addPunkte(){
         punkte += 2;
-        //System.out.println(name + " a maintenant " + punkte + " Punkte.");
     }
 
     void zurueckZiehenStein(Steine stein){
         initstein.remove(stein);
     }
 
-   /*  void resetSpiel(){
-        hatGespielt = false;
-    }*/
-
-
-    boolean spiel(int x, int y, int v, int w, BrettSpiel brett){
+        
+    boolean spiel(int x, int y, int v, int w, BrettSpiel brett){  
         
        return brett.moveSteine(x, y, v, w);
-
-      /* if(bewegung){
-        int midX = (x+v) / 2;
-        int midY = (y+w) / 2;
-        Square sMid =brett.getSquare(midX, midY);
-
-         if(!sMid.isEmpty() && !sMid.getSteine().color().equals(getFarbe())){
-            Steine capturedStein = sMid.getSteine();
-            sMid.removeSteine();
-            gegner.zurueckZiehenStein((capturedStein));
-            this.addPunkte();
-
-         }
-
-        }*/
-       
-      // return bewegung;  
     }
 
     @Override
