@@ -1,3 +1,8 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 enum SteinTyp {
@@ -8,7 +13,56 @@ public class dameSpiel {
     
 }
 
- record Steine(String color, SteinTyp typ){
+class BestScoreTracken{
+   int bestScore;
+   String file = "bestScore.txt";
+
+   BestScoreTracken(String file){
+     this.file = file;
+     bestScore = 0;
+     scoreLesen();
+    }
+
+    int scoreLesen(){
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String zeile = br.readLine();
+            br.close(); 
+            if(zeile != null){
+                bestScore = Integer.parseInt(zeile); 
+            }
+
+        } catch(IOException e){
+                e.printStackTrace();
+            }
+
+      return bestScore;
+        
+    }
+
+    void scoreSpeichern(int newScore){
+        if(newScore>bestScore){
+            bestScore = newScore;
+        
+           try{
+             BufferedWriter wr = new BufferedWriter(new FileWriter(file));
+             wr.write(Integer.toString(bestScore));
+             wr.close();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    
+    }
+
+    void scoreSpeichernSpieler(Spieler gewinner){
+        int newScore = gewinner.getPunkte();  
+        scoreSpeichern(newScore);  
+    }
+}
+
+
+record Steine(String color, SteinTyp typ){
     boolean isDame() {
         return typ == SteinTyp.DAME;
     }
@@ -111,12 +165,8 @@ class BrettSpiel{
     
     Spieler getSpieler2() {
         return spieler2;
-    }        
-
-    boolean isBewegung(int x, int y){
-        return x>=0 && x<8 && y>=0 && y<8 ;
-    }
-
+    } 
+    
     Square getSquare(int x, int y){
         if(!isBewegung(x, y)){
             throw new IllegalArgumentException("Position außerhalb des Spielfelds");
@@ -126,8 +176,34 @@ class BrettSpiel{
     }
 
     void wechselSpieler(){
-    aktuellerSpieler = (aktuellerSpieler == spieler1) ? spieler2 : spieler1;
+        aktuellerSpieler = (aktuellerSpieler == spieler1) ? spieler2 : spieler1;
     }
+
+    boolean isBewegung(int x, int y){
+        return x>=0 && x<8 && y>=0 && y<8 ;
+    }
+
+    String getGewinner() {
+        if (getAnzahlStein(spieler1) == 0) {
+            return spieler2.getName();
+        } else {
+            return spieler1.getName();
+        }
+    }
+
+    boolean isGameOver(){
+        return getAnzahlStein(spieler1) == 0 || getAnzahlStein(spieler2) == 0;
+    }
+
+    
+    void aktualisiereBestScore() {
+        String gewinner = getGewinner();
+        Spieler spielerGewinner = (gewinner.equals(spieler1.getName())) ? spieler1 : spieler2;
+        BestScoreTracken best = new BestScoreTracken("bestScore.txt");
+        best.scoreSpeichernSpieler(spielerGewinner);
+        
+    }
+
 
     int[][] zeigeZugMoeglichkeit(int x ,int y){
        ArrayList<int[]> moeglicheBewegung = new ArrayList<>();
@@ -175,6 +251,7 @@ class BrettSpiel{
         return ergebnis;
     }
 
+
     boolean play(int x, int y, int v, int w){
         boolean erfolgsbewegung = false;
 
@@ -197,20 +274,7 @@ class BrettSpiel{
 
         return true;
     }
-
-    String getGewinner() {
-        if (getAnzahlStein(spieler1) == 0) {
-            return spieler2.getName();
-        } else {
-            return spieler1.getName();
-        }
-    }
-
-    boolean isGameOver(){
-        return getAnzahlStein(spieler1) == 0 || getAnzahlStein(spieler2) == 0;
-    }
-
-
+    
 
     boolean moveSteine(int x, int y, int v, int w){
         if(!isBewegung(x,y) || !isBewegung(v,w)){
