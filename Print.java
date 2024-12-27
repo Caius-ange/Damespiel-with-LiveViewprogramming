@@ -2,27 +2,20 @@ public class Print {
     // Déclaration des variables
     Turtle turtle;
     int tailleCase = 60; // Taille d'une case
-    int lignes = 8; // Nombre de lignes
-    int colonnes = 8; // Nombre de colonnes
     int[] board;
-    //private Spielfeld spielfeld;
+    Spielfeld spielfeld;
 
-    public Print() {
+    public Print(Spielfeld spielfeld) {
+
+        this.spielfeld = spielfeld;
         // Position initiale pour commencer au coin supérieur gauche
-        turtle = initTurtle();
+        //this.turtle = initTurtle();
 
         // Initialisation du tableau
-        //board = spielfeld.initializeBoardswithPawn();
-        board = initializeBoardswithPawns();
-
-        // Dessiner le damier
-        drawBoard(turtle, tailleCase);
+        this.board = spielfeld.getFeld();
 
         // Afficher le damier
-        initialisation(board);
-
-        // Déplacer un pion
-        //simulateMove(board, 17, 24);
+        printBoard(this.board);
     }
 
     Turtle initTurtle() {
@@ -36,29 +29,6 @@ public class Print {
 
         return newTurtle;
     }
-
-    
-    //////////////////////////////////////////////////////////////////
-    //TEMPORAIRE
-    public int[] initializeBoardswithPawn() {
-        int[] feld = new int[64];
-        for (int i = 0; i < 64; i++) {
-            if (i / 8 < 3 && (i + i / 8) % 2 == 1) {
-                feld[i] = Stein.WEISS_STEIN.getWert();
-            } else if (i / 8 > 4 && (i + i / 8) % 2 == 1) {
-                feld[i] = Stein.SCHWARTZ_STEIN.getWert();
-            } else {
-                feld[i] = 0; // Leeres Feld
-            }
-        }
-        return feld;
-    }
-    void simulateMove(int from, int to) {
-        this.board[to] =  this.board[from];
-        this.board[from] = 0;
-        printBoard(this.board);
-    }
-/////////////////////////////////////////////////////////////////
 
 
     public void drawSquareAndFill(Turtle t, int tailleCase, int r, int g, int b) {
@@ -100,7 +70,7 @@ public class Print {
         t.left(90); // Tourner à nouveau pour dessiner dans la bonne direction
         t.color(r, g, b); // Couleur du pion
 
-        drawCircle(t, tailleCase / 4, r, g, b); 
+        drawCircle(t, tailleCase / 4, r, g, b);
 
         // Revenir à la position initiale
         t.backward(tailleCase / 2 - 5); // Revenir au centre de la case
@@ -108,7 +78,7 @@ public class Print {
         t.backward(tailleCase / 2); // Revenir au départ
         t.right(90); // Tourner pour rétablir l'orientation initiale
     }
-    
+
     int[] indexToCoordinates(int index) {
         int[] coordinates = new int[2];
         coordinates[0] = index % 8;
@@ -138,26 +108,6 @@ public class Print {
         t.penUp();
     }
 
-    int[] initializeBoardswithPawns() {
-        int[] board = new int[64];
-        for (int i = 0; i < 64; i++) {
-            if (i / 8 < 3 && (i + i / 8) % 2 == 1) {
-                board[i] = -1;
-            } else if (i / 8 > 4 && (i + i / 8) % 2 == 1) {
-                board[i] = 1;
-
-            }
-            // for usable cases but empty
-            else if (i / 8 > 2 && i / 8 < 5 && (i + i / 8) % 2 == 1) {
-                board[i] = 0;
-            } else {
-                // for usable cases
-                board[i] = 3;
-            }
-        }
-        return board;
-    }
-
     void drawBoard(Turtle t, int tailleCase) {
         boolean isStartWithLightBrown = true;
 
@@ -172,70 +122,45 @@ public class Print {
                 t.penDown();
             }
             if (isStartWithLightBrown) {
-                //drawSquareAndFill(t, tailleCase, 255, 228, 196);
-                drawSquareAndFill(t, tailleCase, 0, 0, 0);
+                drawSquareAndFill(t, tailleCase, 255, 228, 196);
                 isStartWithLightBrown = false;
             } else {
-                //drawSquareAndFill(t, tailleCase, 139, 69, 19);
-                drawSquareAndFill(t, tailleCase, 255, 255, 255);
+                drawSquareAndFill(t, tailleCase, 139, 69, 19);
                 isStartWithLightBrown = true;
             }
         }
     }
 
-    void removePawn(Turtle t, int index) {
-        int[] coordinates = indexToCoordinates(index);
-        t.moveTo(coordinates[0] * tailleCase, coordinates[1] * tailleCase);
-        //drawSquareAndFill(t, tailleCase, 255, 255, 255);
-
-        drawSquareAndFill(t, tailleCase, 255, 255, 255);
-    }
-
-    void initialisation(int[] boardToPrint) {
-        for (int i = 0; i < 64; i++) {
-            switch (boardToPrint[i]) {
-                case -1:
-                    drawPawn(turtle, i, tailleCase, 0, 0, 255);
-                    break;
-                case 1:
-                    drawPawn(turtle, i, tailleCase, 255, 0, 0);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
 
     void printBoard(int[] boardToPrint) {
         Turtle newTurtle = initTurtle();
 
         drawBoard(newTurtle, tailleCase);
 
-        
-
         for (int i = 0; i < 64; i++) {
             switch (boardToPrint[i]) {
 
-                case 0:
-                System.out.println("0 found" + i);
-                    removePawn(newTurtle, i);
-                    break;
                 case -1:
                     drawPawn(newTurtle, i, tailleCase, 0, 0, 255);
                     break;
                 case 1:
                     drawPawn(newTurtle, i, tailleCase, 255, 0, 0);
                     break;
-                // king case 1
                 case 2:
+                    drawPawn(newTurtle, i, tailleCase, 255, 255, 255);
                     break;
-                // king case -1
                 case -2:
+                    drawPawn(newTurtle, i, tailleCase, 255, 255, 255);
                     break;
                 default:
                     break;
             }
 
         }
+    }
+
+    //getter for Spielfeld
+    public Spielfeld getSpielfeld() {
+        return spielfeld;
     }
 }

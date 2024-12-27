@@ -84,7 +84,6 @@ public class Spielfeld {
     private Spieler spieler2;
     // private Spieler getAktuellerSpieler();
     private int turn; // 1 pour blanc, -1 pour noir
-    private Print graphischeAnsicht; // Vue graphique du plateau
 
 
     public Spielfeld() {
@@ -95,8 +94,6 @@ public class Spielfeld {
         turn = 1; // Le joueur blanc commence
        // initialisieren();
        feld = initializeBoardswithPawn();
-       graphischeAnsicht = new Print(this);  // Initialisation de la vue graphique
-
     }
 
     // private void initialisieren() {
@@ -131,77 +128,61 @@ public class Spielfeld {
     }
 
     public boolean steinBewegenAusfuehren(int startIndex, int zielIndex) {
-        boolean zugErgebnis = bewegungDurchfuehren(startIndex, zielIndex);
-        if (zugErgebnis) {
-            graphischeAnsicht.brettAktualisieren();
-        }
-        return zugErgebnis;
-    }
-
-    private boolean bewegungDurchfuehren(int startIndex, int zielIndex) {
+        // Vérifier si le jeu est terminé
         if (istSpielAmEnde()) {
-            spielEndeBehandeln();
+            System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
+            BestenPunktestandVerwalten best = new BestenPunktestandVerwalten("bestScore.txt");
+            int besterPunktestand = best.punktestandLesen();
+
+            if (getGewinner().getPunkte() > besterPunktestand) {
+                best.punktestandSpeichernSpieler(getGewinner());
+                System.out.println("Herzlichen Glueckwunsch, Sie haben den besten aktuellen Punktestand!");
+            }
             return false;
         }
-        // Vérifiez et limitez les appels à la logique du joueur
-        boolean zugErgebnis;
+
+        // Si c'est le tour de l'IA
         if (getAktuellerSpieler().isKI()) {
-            zugErgebnis = kiZugBehandeln();
-        } else {
-            zugErgebnis =  spielerZugBehandeln(startIndex, zielIndex);
-        }
+            System.out.println("KI ist dran...");
+            int[] besterZug = MinimaxSpieler.findeBestenZug(this);
 
-        if (zugErgebnis) {
-            wechselSpieler(); // Change le joueur seulement après un coup valide
-        }
-    
-        return zugErgebnis;
-    }
-    
-
-    private void spielEndeBehandeln() {
-        System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
-        BestenPunktestandVerwalten best = new BestenPunktestandVerwalten("bestScore.txt");
-        int besterPunktestand = best.punktestandLesen();
-
-        if (getGewinner().getPunkte() > besterPunktestand) {
-            best.punktestandSpeichernSpieler(getGewinner());
-            System.out.println("Herzlichen Glueckwunsch, Sie haben den besten aktuellen Punktestand!");
-        }
-    }
-
-    private boolean kiZugBehandeln() {
-        System.out.println("KI ist dran...");
-        int[] besterZug = MinimaxSpieler.findeBestenZug(this);
-
-        if (besterZug != null) {
-            try {
-                steinBewegen(besterZug[0], besterZug[1]);
-                System.out.println("KI zieht von " + besterZug[0] + " nach " + besterZug[1]);
-                wechselSpieler();
-                return true;
-            } catch (IllegalArgumentException e) {
-                System.out.println("KI-Fehler: " + e.getMessage());
+            if (besterZug != null) {
+                try {
+                    steinBewegen(besterZug[0], besterZug[1]);
+                    System.out.println("KI zieht von " + besterZug[0] + " nach " + besterZug[1]);
+                    wechselSpieler();
+                    
+                   // cal toString() method
+                   System.out.println(this);
+                    return true;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("KI-Fehler: " + e.getMessage());
+                    return false;
+                }
+            } else {
+                System.out.println("Die KI kann keinen gueltigen Zug finden.");
+                
                 return false;
             }
-        } else {
-            System.out.println("Die KI kann keinen gueltigen Zug finden.");
-            return false;
         }
-    }
+        // Si c'est le tour du joueur humain
+        else {
+            try {
+                steinBewegen(startIndex, zielIndex);
+                wechselSpieler();
 
-    private boolean spielerZugBehandeln(int startIndex, int zielIndex) {
-        try {
-            steinBewegen(startIndex, zielIndex);
-            wechselSpieler();
+                // Après le mouvement du joueur humain, faire jouer l'IA si c'est son tour
+                if (!istSpielAmEnde() && getAktuellerSpieler().isKI()) {
+                    return steinBewegenAusfuehren(0, 0); // Les paramètres sont ignorés pour l'IA
+                }
 
-            if (!istSpielAmEnde() && getAktuellerSpieler().isKI()) {
-                return steinBewegenAusfuehren(0, 0);
+                // cal toString() method
+                System.out.println(this);
+                return true;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Ungueltiger Zug: " + e.getMessage());
+                return false;
             }
-            return true;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Ungueltiger Zug: " + e.getMessage());
-            return false;
         }
     }
 
@@ -852,180 +833,5 @@ class MinimaxSpieler {
         return false;
     }
 }
-
-// Classe pour l'affichage graphique du plateau
-class Print {
-    // Déclaration des variables
-    Turtle turtle;
-    int tailleCase = 60; // Taille d'une case
-    int[] board;
-    Spielfeld spielfeld;
-
-    public Print(Spielfeld spielfeld) {
-
-        this.spielfeld = spielfeld;
-        // Position initiale pour commencer au coin supérieur gauche
-        this.turtle = initTurtle();
-
-        // Initialisation du tableau
-        this.board = spielfeld.getFeld();
-
-        // Dessiner le damier
-        drawBoard(turtle, tailleCase);
-
-        // Afficher le damier
-        printBoard(this.board);
-    }
-
-    Turtle initTurtle() {
-        Turtle newTurtle = new Turtle(480, 480);
-        newTurtle.penUp();
-        newTurtle.backward(240);
-        newTurtle.left(90);
-        newTurtle.forward(240);
-        newTurtle.right(90);
-        newTurtle.penDown();
-
-        return newTurtle;
-    }
-
-    
-    
-
-
-    public void drawSquareAndFill(Turtle t, int tailleCase, int r, int g, int b) {
-        t.penDown();
-
-        for (int i = 0; i < 4; i++) {
-            t.forward(tailleCase);
-            t.right(90);
-        }
-
-        for (int i = 0; i < tailleCase; i++) {
-            t.color(r, g, b);
-            t.penUp();
-            t.right(90);
-            t.forward(1);
-            t.left(90);
-            t.penDown();
-            t.forward(tailleCase);
-            t.penUp();
-            t.backward(tailleCase);
-        }
-        t.penUp();
-        t.right(90);
-        t.backward(tailleCase);
-        t.left(90);
-        t.forward(tailleCase);
-    }
-
-    // method to draw a Pawn with a given color
-    public void drawPawn(Turtle t, int indexZuKoordinaten, int tailleCase, int r, int g, int b) {
-
-        t.penUp();
-        int[] coordinates = indexToCoordinates(indexZuKoordinaten);
-        t.moveTo(coordinates[0] * tailleCase, coordinates[1] * tailleCase);
-
-        t.forward(tailleCase / 2); // Aller au centre de la case
-        t.right(90); // Tourner pour se positionner au centre
-        t.forward(tailleCase / 3 - 5); // S'ajuster légèrement pour éviter de dessiner sur les bords
-        t.left(90); // Tourner à nouveau pour dessiner dans la bonne direction
-        t.color(r, g, b); // Couleur du pion
-
-        drawCircle(t, tailleCase / 4, r, g, b);
-
-        // Revenir à la position initiale
-        t.backward(tailleCase / 2 - 5); // Revenir au centre de la case
-        t.left(90); // Tourner pour retourner à la position initiale
-        t.backward(tailleCase / 2); // Revenir au départ
-        t.right(90); // Tourner pour rétablir l'orientation initiale
-    }
-
-    int[] indexToCoordinates(int index) {
-        int[] coordinates = new int[2];
-        coordinates[0] = index % 8;
-        coordinates[1] = index / 8;
-        System.out.println("Index: " + index + " -> Coords: " + coordinates[0] + ", " + coordinates[1]);
-        return coordinates;
-    }
-
-    void drawCircle(Turtle t, int tailleCercle, int r, int g, int b) {
-        t.penDown();
-        for (int i = 0; i < 36; i++) {
-            t.forward(2 * Math.PI * tailleCercle / 36);
-            t.right(10);
-        }
-
-        // draw the circle with a given color
-        for (int i = 0; i < 36; i++) {
-            t.color(r, g, b);
-            t.penUp();
-            t.right(10);
-            t.forward(2 * Math.PI * tailleCercle / 36);
-            t.penDown();
-            t.forward(2 * Math.PI * tailleCercle / 36);
-            t.penUp();
-            t.backward(2 * Math.PI * tailleCercle / 36);
-        }
-        t.penUp();
-    }
-
-    void drawBoard(Turtle t, int tailleCase) {
-        boolean isStartWithLightBrown = true;
-
-        for (int i = 0; i < 64; i++) {
-            if (i % 8 == 0 && i != 0) {
-                isStartWithLightBrown = !isStartWithLightBrown;
-                t.penUp();
-                t.backward(8 * tailleCase);
-                t.right(90);
-                t.forward(tailleCase);
-                t.left(90);
-                t.penDown();
-            }
-            if (isStartWithLightBrown) {
-                drawSquareAndFill(t, tailleCase, 255, 228, 196);
-                isStartWithLightBrown = false;
-            } else {
-                drawSquareAndFill(t, tailleCase, 139, 69, 19);
-                isStartWithLightBrown = true;
-            }
-        }
-    }
-
-
-    void printBoard(int[] boardToPrint) {
-        Turtle newTurtle = initTurtle();
-
-        drawBoard(newTurtle, tailleCase);
-
-        for (int i = 0; i < 64; i++) {
-            switch (boardToPrint[i]) {
-
-                case -1:
-                    drawPawn(newTurtle, i, tailleCase, 0, 0, 255);
-                    break;
-                case 1:
-                    drawPawn(newTurtle, i, tailleCase, 255, 0, 0);
-                    break;
-                case 2:
-                    drawPawn(newTurtle, i, tailleCase, 255, 255, 255);
-                    break;
-                case -2:
-                    drawPawn(newTurtle, i, tailleCase, 255, 255, 255);
-                    break;
-                default:
-                    break;
-            }
-
-        }
-
-    }
-
-    public void brettAktualisieren() {
-        this.board = spielfeld.getFeld();
-        printBoard(this.board);
-    }
- }
 
     
