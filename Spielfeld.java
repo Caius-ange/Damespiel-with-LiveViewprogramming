@@ -96,20 +96,6 @@ public class Spielfeld {
        feld = initializeBoardswithPawn();
     }
 
-    // private void initialisieren() {
-    //     spieler1.setAnzahlStein(12);
-    //     spieler2.setAnzahlStein(12);
-    //     for (int i = 0; i < 64; i++) {
-    //         if (i / 8 < 3 && (i + i / 8) % 2 == 1) {
-    //             feld[i] = Stein.WEISS_STEIN.getWert();
-    //         } else if (i / 8 > 4 && (i + i / 8) % 2 == 1) {
-    //             feld[i] = Stein.SCHWARTZ_STEIN.getWert();
-    //         } else {
-    //             feld[i] = 0; // Leeres Feld
-    //         }
-    //     }
-    // }
-
     public int[] initializeBoardswithPawn() {
         spieler1.setAnzahlStein(12);
         spieler2.setAnzahlStein(12);
@@ -484,27 +470,6 @@ public class Spielfeld {
     boolean istImSpielfeld(int index) {
         return index >= 0 && index < 64;
     }
-    /*
-     * int[] indexZuKoordinaten(int index) {
-     * if (!istImSpielfeld(index)) {
-     * throw new IllegalArgumentException("Index ist außerhalb des Spielfelds.");
-     * }
-     * 
-     * int y = index % 8; // Colonne (0 à 7)
-     * int x = index / 8; // Ligne (0 à 7)
-     * 
-     * return new int[] { x, y };
-     * }
-     * 
-     * int koordinatenZuIndex(int x, int y) {
-     * if (x < 0 || x >= 8 || y < 0 || y >= 8) {
-     * throw new
-     * IllegalArgumentException("Koordinaten sind außerhalb des Spielfelds.");
-     * }
-     * 
-     * return x * 8 + y;
-     * }
-     */
 
     boolean istSpielAmEnde() {
         return spieler1.getAnzahlStein() == 0 || spieler2.getAnzahlStein() == 0;
@@ -833,5 +798,3 @@ class MinimaxSpieler {
         return false;
     }
 }
-
-    

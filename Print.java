@@ -3,17 +3,16 @@ public class Print {
     Turtle turtle;
     int tailleCase = 60; // Taille d'une case
     int[] board;
-    Spielfeld spielfeld;
+   // Spielfeld spielfeld;
 
-    public Print(Spielfeld spielfeld) {
+    public Print(int[] board) {
 
-        this.spielfeld = spielfeld;
+        //this.spielfeld = spielfeld;
         // Position initiale pour commencer au coin supérieur gauche
         //this.turtle = initTurtle();
 
         // Initialisation du tableau
-        this.board = spielfeld.getFeld();
-
+        this.board = board;
         // Afficher le damier
         printBoard(this.board);
     }
@@ -83,7 +82,6 @@ public class Print {
         int[] coordinates = new int[2];
         coordinates[0] = index % 8;
         coordinates[1] = index / 8;
-        System.out.println("Index: " + index + " -> Coords: " + coordinates[0] + ", " + coordinates[1]);
         return coordinates;
     }
 
@@ -157,10 +155,5 @@ public class Print {
             }
 
         }
-    }
-
-    //getter for Spielfeld
-    public Spielfeld getSpielfeld() {
-        return spielfeld;
     }
 }
