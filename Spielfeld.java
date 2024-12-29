@@ -82,21 +82,18 @@ public class Spielfeld {
     private final int[] feld;
     private Spieler spieler1;
     private Spieler spieler2;
-    // private Spieler getAktuellerSpieler();
     private int turn; // 1 pour blanc, -1 pour noir
 
 
     public Spielfeld() {
-        //feld = new int[64];
         spieler1 = new Spieler("spieler1", Stein.WEISS_STEIN, false);
         spieler2 = new Spieler("spieler2", Stein.SCHWARTZ_STEIN, true);
-        // getAktuellerSpieler() = spieler1;
         turn = 1; // Le joueur blanc commence
        // initialisieren();
-       feld = initializeBoardswithPawn();
+       feld = initialisieren();
     }
 
-    public int[] initializeBoardswithPawn() {
+    public int[] initialisieren() {
         spieler1.setAnzahlStein(12);
         spieler2.setAnzahlStein(12);
 
@@ -113,7 +110,7 @@ public class Spielfeld {
         return feld;
     }
 
-    public boolean steinBewegenAusfuehren(int startIndex, int zielIndex) {
+    public boolean bewegenAusuehren(int startIndex, int zielIndex) {
         // Vérifier si le jeu est terminé
         if (istSpielAmEnde()) {
             System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
@@ -159,7 +156,7 @@ public class Spielfeld {
 
                 // Après le mouvement du joueur humain, faire jouer l'IA si c'est son tour
                 if (!istSpielAmEnde() && getAktuellerSpieler().isKI()) {
-                    return steinBewegenAusfuehren(0, 0); // Les paramètres sont ignorés pour l'IA
+                    return bewegenAusuehren(0, 0); // Les paramètres sont ignorés pour l'IA
                 }
 
                 // cal toString() method
@@ -438,7 +435,8 @@ public class Spielfeld {
 
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Aktueller Spieler : ").append(getAktuellerSpieler()).append("\n");
+        builder.append(spieler1).append("\n");
+        builder.append(spieler2).append("\n");
         for (int i = 0; i < 64; i++) {
             // builder.append(i);
             if (i % 8 == 0 && i != 0) {
@@ -587,7 +585,7 @@ class BestenPunktestandVerwalten {
 }
 
 class MinimaxSpieler {
-    private static final int MAX_TIEFE = 3;
+    private static final int MAX_TIEFE = 5;
 
     public static int[] findeBestenZug(Spielfeld spielfeld) {
         int besterWert = Integer.MIN_VALUE;
