@@ -43,6 +43,10 @@ class Spieler {
         this.anzahlStein = 0;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public int getPunkte() {
         return punkte;
     }
@@ -110,7 +114,8 @@ public class Spielfeld {
         return feld;
     }
 
-    public boolean bewegenAusuehren(int startIndex, int zielIndex) {
+    // bewegenAusfuehren
+    public boolean bewegenAusfuehren(int startIndex, int zielIndex) {
         // Vérifier si le jeu est terminé
         if (istSpielAmEnde()) {
             System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
@@ -156,7 +161,7 @@ public class Spielfeld {
 
                 // Après le mouvement du joueur humain, faire jouer l'IA si c'est son tour
                 if (!istSpielAmEnde() && getAktuellerSpieler().isKI()) {
-                    return bewegenAusuehren(0, 0); // Les paramètres sont ignorés pour l'IA
+                    return bewegenAusfuehren(0, 0); // Les paramètres sont ignorés pour l'IA
                 }
 
                 // cal toString() method
@@ -168,6 +173,8 @@ public class Spielfeld {
             }
         }
     }
+    // bewegenAusfuehren
+
 
     public void steinBewegen(int startIndex, int zielIndex) {
         if (!istImSpielfeld(startIndex) || !istImSpielfeld(zielIndex)) {

@@ -7,7 +7,7 @@ public class DameView {
         // Initialisation du tableau
         this.board = board;
         // Afficher le damier
-        druckeBrett(this.board);
+        druckeBrett(this.board,0, 12, 0, 12, false, "");
     }
 
     Turtle initTurtle() {
@@ -132,7 +132,7 @@ public class DameView {
     }
 
 
-    void druckeBrett(int[] brettZumDrucken) {
+    void druckeBrett(int[] brettZumDrucken, int spPunkte, int spSteine, int kiPunkte, int kiSteine, boolean spielEnde, String gewinner) {
         Turtle newTurtle = initTurtle();
 
         zeichneBrett(newTurtle, quadratGroesse);
@@ -157,5 +157,41 @@ public class DameView {
             }
 
         }
+
+        zeichneInfo(spPunkte, spSteine, kiPunkte, kiSteine, spielEnde, gewinner);
+    }
+
+    void zeichneInfo(int spPunkte, int spSteine, int kiPunkte, int kiSteine, boolean spielEnde, String gewinner) {
+
+        Turtle infoTurtle = new Turtle(480,60);
+
+        // si le jeu est terminé, afficher le message de fin
+        if (spielEnde) {
+            String endText = "Der Gewinner ist " + gewinner;
+            infoTurtle.penUp();
+            infoTurtle.backward(229);
+            infoTurtle.left(90);
+            infoTurtle.forward(8);
+            infoTurtle.right(90);
+            infoTurtle.right(270);
+            infoTurtle.text(endText, Font.SANSSERIF, 30, Font.Align.LEFT);
+            return;
+        }
+
+        String spInfoText = "Spieler 1: Mensch      Punkte: " + spPunkte + "    Steine: " + spSteine;
+        String kiInfoText = "Spieler 2: KI               Punkte: " + kiPunkte + "    Steine: " + kiSteine;
+        infoTurtle.penUp();
+
+        infoTurtle.backward(229);
+        infoTurtle.left(90);
+        infoTurtle.forward(8);
+        infoTurtle.right(90);
+        infoTurtle.right(270);
+        infoTurtle.text(spInfoText, Font.SANSSERIF, 20, Font.Align.LEFT);  
+
+        infoTurtle.backward(30);
+        infoTurtle.right(90);
+        infoTurtle.left(90);
+        infoTurtle.text(kiInfoText, Font.SANSSERIF, 20, Font.Align.LEFT);
     }
 }
