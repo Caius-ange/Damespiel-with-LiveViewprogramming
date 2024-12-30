@@ -63,8 +63,8 @@ class Spieler {
         this.anzahlStein = anzahlStein;
     }
 
-    public void erhoehePunkte(int punkte) {
-        this.punkte += 2;
+    public void erhoehePunkte() {
+        this.punkte += 4;
     }
 
     public boolean isKI() {
@@ -77,8 +77,8 @@ class Spieler {
 
     @Override
     public String toString() {
-        return name + " " + "(" + farbe.getSymbol() + ") -- Punkte : " + punkte + " " + "-- Anzahlstein: "
-                + anzahlStein + " -- KI: " + (isKI ? "Ja" : "Nein");
+        return name + "   " + "Punkte : " + punkte + "   " + "Steine: "
+                + anzahlStein;
     }
 }
 
@@ -87,14 +87,15 @@ public class Spielfeld {
     private Spieler spieler1;
     private Spieler spieler2;
     private int turn; // 1 pour blanc, -1 pour noir
-
+    BestenPunktestandVerwalten best;
 
     public Spielfeld() {
         spieler1 = new Spieler("spieler1", Stein.WEISS_STEIN, false);
         spieler2 = new Spieler("spieler2", Stein.SCHWARTZ_STEIN, true);
         turn = 1; // Le joueur blanc commence
-       // initialisieren();
-       feld = initialisieren();
+        best = new BestenPunktestandVerwalten("bestScore.txt");
+        // initialisieren();
+        feld = initialisieren();
     }
 
     public int[] initialisieren() {
@@ -102,7 +103,7 @@ public class Spielfeld {
         spieler2.setAnzahlStein(12);
 
         int[] feld = new int[64];
-        for (int i = 0; i < 64; i++) { 
+        for (int i = 0; i < 64; i++) {
             if (i / 8 < 3 && (i + i / 8) % 2 == 1) {
                 feld[i] = Stein.WEISS_STEIN.getWert();
             } else if (i / 8 > 4 && (i + i / 8) % 2 == 1) {
@@ -114,20 +115,8 @@ public class Spielfeld {
         return feld;
     }
 
-    // bewegenAusfuehren
+    // a2
     public boolean bewegenAusfuehren(int startIndex, int zielIndex) {
-        // Vérifier si le jeu est terminé
-        if (istSpielAmEnde()) {
-            System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
-            BestenPunktestandVerwalten best = new BestenPunktestandVerwalten("bestScore.txt");
-            int besterPunktestand = best.punktestandLesen();
-
-            if (getGewinner().getPunkte() > besterPunktestand) {
-                best.punktestandSpeichernSpieler(getGewinner());
-                System.out.println("Herzlichen Glueckwunsch, Sie haben den besten aktuellen Punktestand!");
-            }
-            return false;
-        }
 
         // Si c'est le tour de l'IA
         if (getAktuellerSpieler().isKI()) {
@@ -139,9 +128,19 @@ public class Spielfeld {
                     steinBewegen(besterZug[0], besterZug[1]);
                     System.out.println("KI zieht von " + besterZug[0] + " nach " + besterZug[1]);
                     wechselSpieler();
-                    
-                   // cal toString() method
-                   System.out.println(this);
+
+                    // cal toString() method
+                    System.out.println(this);
+
+                    if (istSpielAmEnde()) {
+                        System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
+
+                        if (getGewinner().getPunkte() > best.getBesterPunktestand()) {
+                            best.punktestandSpeichern(getGewinner().getPunkte());
+                            System.out.println("Herzlichen Glueckwunsch, Sie haben den besten aktuellen Punktestand!");
+                        }
+                    }
+
                     return true;
                 } catch (IllegalArgumentException e) {
                     System.out.println("KI-Fehler: " + e.getMessage());
@@ -149,7 +148,7 @@ public class Spielfeld {
                 }
             } else {
                 System.out.println("Die KI kann keinen gueltigen Zug finden.");
-                
+
                 return false;
             }
         }
@@ -166,15 +165,25 @@ public class Spielfeld {
 
                 // cal toString() method
                 System.out.println(this);
+
+                if (istSpielAmEnde()) {
+                    System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
+        
+                    if (getGewinner().getPunkte() > best.getBesterPunktestand()) {
+                        best.punktestandSpeichern(getGewinner().getPunkte());
+                        System.out.println("Herzlichen Glueckwunsch, Sie haben den besten aktuellen Punktestand!");
+                    }
+                }
+
                 return true;
+
             } catch (IllegalArgumentException e) {
                 System.out.println("Ungueltiger Zug: " + e.getMessage());
                 return false;
             }
         }
     }
-    // bewegenAusfuehren
-
+    // a2
 
     public void steinBewegen(int startIndex, int zielIndex) {
         if (!istImSpielfeld(startIndex) || !istImSpielfeld(zielIndex)) {
@@ -212,6 +221,7 @@ public class Spielfeld {
         dameBeforderungPruefen(zielIndex);
     }
 
+    // a3
     public boolean steinSchlagen(int startIndex, int zielIndex) {
         int stein = feld[startIndex];
         boolean istDame = Math.abs(stein) == 2;
@@ -226,6 +236,7 @@ public class Spielfeld {
         return schlag;
     }
 
+    // a3
     private boolean dameSchlagen(int startIndex, int zielIndex) {
         int stein = feld[startIndex];
         // Calculer la direction du mouvement
@@ -302,7 +313,7 @@ public class Spielfeld {
         // Punktestand und Steinanzahl aktualisieren
         Spieler gegner = getGegnerSpieler();
         gegner.setAnzahlStein(gegner.getAnzahlStein() - 1);
-        getAktuellerSpieler().erhoehePunkte(2);
+        getAktuellerSpieler().erhoehePunkte();
     }
 
     private void mehrfachschlaegePruefen(int index) {
@@ -330,6 +341,7 @@ public class Spielfeld {
         }
     }
 
+    // a7
     public int[] zeigeZugMoeglichkeit(int index) {
         ArrayList<Integer> moeglicheBewegung = new ArrayList<>();
         // Vérification si l'index est dans le plateau
@@ -420,6 +432,7 @@ public class Spielfeld {
 
         return moeglicheBewegung.stream().mapToInt(i -> i).toArray();
     }
+    // a7
 
     // Méthode auxiliaire mise à jour pour vérifier la validité d'une diagonale
     private boolean istGueltigeDiagonale(int start, int ziel) {
@@ -522,14 +535,6 @@ public class Spielfeld {
         return feld;
     }
 
-    void aktualisiereBestenPunktestand() {
-        Spieler gewinner = getGewinner();
-        Spieler gewinnSpieler = (gewinner.equals(spieler1)) ? spieler1 : spieler2;
-        BestenPunktestandVerwalten best = new BestenPunktestandVerwalten("bestScore.txt");
-        best.punktestandSpeichernSpieler(gewinnSpieler);
-
-    }
-
     Spieler getSpieler1() {
         return spieler1;
     }
@@ -538,8 +543,13 @@ public class Spielfeld {
         return spieler2;
     }
 
+    public BestenPunktestandVerwalten getBestenPunktestandVerwalten() {
+        return this.best;
+    }
+
 }
 
+// a6
 class BestenPunktestandVerwalten {
     int besterPunktestand;
     String datei = "bestScore.txt";
@@ -584,16 +594,16 @@ class BestenPunktestandVerwalten {
         }
     }
 
-    // Méthode pour enregistrer le score du gagnant
-    void punktestandSpeichernSpieler(Spieler gewinner) {
-        int neuerPunktestand = gewinner.getPunkte();
-        punktestandSpeichern(neuerPunktestand);
+    int getBesterPunktestand() {
+        return this.besterPunktestand;
     }
 }
 
+// a6
 class MinimaxSpieler {
     private static final int MAX_TIEFE = 5;
 
+    // a5
     public static int[] findeBestenZug(Spielfeld spielfeld) {
         int besterWert = Integer.MIN_VALUE;
         int besterStart = -1;
@@ -735,6 +745,7 @@ class MinimaxSpieler {
             return minWert;
         }
     }
+    // a5
 
     // Funktion zur Bewertung der Stellung
     private static int bewerteStellung(Spielfeld spielfeld) {

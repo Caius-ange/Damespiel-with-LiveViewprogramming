@@ -1,13 +1,13 @@
 public class DameView {
     Turtle turtle;
-    int quadratGroesse = 60; 
-    int[] board;
+    int quadratGroesse = 60;
+    Spielfeld spielfeld;
 
-    public DameView(int[] board) {
+    public DameView(Spielfeld spielfeld) {
         // Initialisation du tableau
-        this.board = board;
+        this.spielfeld = spielfeld;
         // Afficher le damier
-        druckeBrett(this.board,0, 12, 0, 12, false, "");
+        druckeBrett(this.spielfeld);
     }
 
     Turtle initTurtle() {
@@ -21,7 +21,6 @@ public class DameView {
 
         return newTurtle;
     }
-
 
     public void zeichneQuadratUndFuelle(Turtle t, int quadratGroesse, int r, int g, int b) {
         t.penDown();
@@ -54,32 +53,32 @@ public class DameView {
         t.penUp();
         int[] koordinat = indexZuKoordinaten(index);
         t.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
-    
+
         t.forward(quadratGroesse / 2); // Aller au centre de la case
         t.right(90); // Tourner pour se positionner au centre
         t.forward(quadratGroesse / 3 - 5); // Ajustement léger
         t.left(90); // Tourner pour dessiner dans la bonne direction
 
-        for(int i = 0; i < (quadratGroesse / 3 - 5); i++) {
-            zeichneKreis(t, (quadratGroesse / 3 - 5) - i/3, r, g, b); // Appel pour dessiner un cercle plein
+        for (int i = 0; i < (quadratGroesse / 3 - 5); i++) {
+            zeichneKreis(t, (quadratGroesse / 3 - 5) - i / 3, r, g, b); // Appel pour dessiner un cercle plein
         }
-    
+
     }
 
     public void zeichneKoenigen(Turtle t, int index, int quadratGroesse, int r, int g, int b) {
         t.penUp();
         int[] koordinat = indexZuKoordinaten(index);
         t.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
-    
+
         t.forward(quadratGroesse / 2); // Aller au centre de la case
         t.right(90); // Tourner pour se positionner au centre
         t.forward(quadratGroesse / 3 - 5); // Ajustement léger
         t.left(90); // Tourner pour dessiner dans la bonne direction
 
-        for(int i = 0; i < (quadratGroesse / 3 - 5); i++) {
+        for (int i = 0; i < (quadratGroesse / 3 - 5); i++) {
             zeichneKreis(t, (quadratGroesse / 3 - 5) - i, r, g, b); // Appel pour dessiner un cercle plein
         }
-    
+
     }
 
     int[] indexZuKoordinaten(int index) {
@@ -92,21 +91,19 @@ public class DameView {
     void zeichneKreis(Turtle t, int kreisGroesse, int r, int g, int b) {
         t.color(r, g, b); // Définir la couleur
         t.penDown();
-        
+
         // Pour dessiner un cercle plein
         int segments = 36; // Nombre de segments pour le cercle
         double angle = 360.0 / segments; // Angle de chaque segment
         double step = 2 * Math.PI * kreisGroesse / segments; // Longueur de chaque segment
-    
+
         for (int i = 0; i < segments; i++) {
             t.forward(step); // Avancer d'un segment
             t.right(angle); // Tourner pour suivre le cercle
         }
-    
+
         t.penUp();
     }
-
-    
 
     void zeichneBrett(Turtle t, int quadratGroesse) {
         boolean beginntMitHellBraun = true;
@@ -130,15 +127,14 @@ public class DameView {
             }
         }
     }
-
-
-    void druckeBrett(int[] brettZumDrucken, int spPunkte, int spSteine, int kiPunkte, int kiSteine, boolean spielEnde, String gewinner) {
+    // a4
+    void druckeBrett(Spielfeld spielfeld) {
         Turtle newTurtle = initTurtle();
 
         zeichneBrett(newTurtle, quadratGroesse);
 
         for (int i = 0; i < 64; i++) {
-            switch (brettZumDrucken[i]) {
+            switch (spielfeld.getFeld()[i]) {
 
                 case -1:
                     zeichneStein(newTurtle, i, quadratGroesse, 0, 0, 0);
@@ -158,40 +154,62 @@ public class DameView {
 
         }
 
-        zeichneInfo(spPunkte, spSteine, kiPunkte, kiSteine, spielEnde, gewinner);
+        zeichneInfo(spielfeld);
     }
+     // a4
 
-    void zeichneInfo(int spPunkte, int spSteine, int kiPunkte, int kiSteine, boolean spielEnde, String gewinner) {
+    void zeichneInfo(Spielfeld spielfeld) {
 
-        Turtle infoTurtle = new Turtle(480,60);
+        int besterpunktestand = spielfeld.getBestenPunktestandVerwalten().getBesterPunktestand();
+        int spPunkte = spielfeld.getSpieler1().getPunkte(); 
+        int spSteine = spielfeld.getSpieler1().getAnzahlStein();
+        int kiPunkte = spielfeld.getSpieler2().getPunkte(); 
+        int kiSteine = spielfeld.getSpieler2().getAnzahlStein();
 
         // si le jeu est terminé, afficher le message de fin
-        if (spielEnde) {
-            String endText = "Der Gewinner ist " + gewinner;
+        if (spielfeld.istSpielAmEnde()) {
+            Turtle newInfoTurtle = new Turtle(480, 100);
+
+            String text = "Der Gewinner ist " + spielfeld.getGewinner();
+            String text2 = "Der Besterpunktestand: " + besterpunktestand;
+            newInfoTurtle.penUp();
+            newInfoTurtle.backward(229);
+            newInfoTurtle.left(90);
+            newInfoTurtle.forward(18);
+            newInfoTurtle.right(90);
+            newInfoTurtle.right(270);
+            newInfoTurtle.text("Das Spiel ist bereits beendet.", Font.SANSSERIF, 20, Font.Align.LEFT);
+
+            newInfoTurtle.backward(30);
+            newInfoTurtle.right(90);
+            newInfoTurtle.left(90);
+            newInfoTurtle.text(text, Font.SANSSERIF, 20, Font.Align.LEFT);
+
+            newInfoTurtle.backward(30);
+            newInfoTurtle.right(90);
+            newInfoTurtle.left(90);
+            newInfoTurtle.text(text2, Font.SANSSERIF, 20, Font.Align.LEFT);
+
+            return;
+
+        } else {
+            Turtle infoTurtle = new Turtle(480, 60);
+
+            String spInfoText = "Spieler 1: Mensch      Punkte: " + spPunkte + "    Steine: " + spSteine;
+            String kiInfoText = "Spieler 2: KI               Punkte: " + kiPunkte + "    Steine: " + kiSteine;
             infoTurtle.penUp();
+
             infoTurtle.backward(229);
             infoTurtle.left(90);
             infoTurtle.forward(8);
             infoTurtle.right(90);
             infoTurtle.right(270);
-            infoTurtle.text(endText, Font.SANSSERIF, 30, Font.Align.LEFT);
-            return;
+            infoTurtle.text(spInfoText, Font.SANSSERIF, 20, Font.Align.LEFT);
+
+            infoTurtle.backward(30);
+            infoTurtle.right(90);
+            infoTurtle.left(90);
+            infoTurtle.text(kiInfoText, Font.SANSSERIF, 20, Font.Align.LEFT);
         }
-
-        String spInfoText = "Spieler 1: Mensch      Punkte: " + spPunkte + "    Steine: " + spSteine;
-        String kiInfoText = "Spieler 2: KI               Punkte: " + kiPunkte + "    Steine: " + kiSteine;
-        infoTurtle.penUp();
-
-        infoTurtle.backward(229);
-        infoTurtle.left(90);
-        infoTurtle.forward(8);
-        infoTurtle.right(90);
-        infoTurtle.right(270);
-        infoTurtle.text(spInfoText, Font.SANSSERIF, 20, Font.Align.LEFT);  
-
-        infoTurtle.backward(30);
-        infoTurtle.right(90);
-        infoTurtle.left(90);
-        infoTurtle.text(kiInfoText, Font.SANSSERIF, 20, Font.Align.LEFT);
     }
 }
