@@ -33,13 +33,13 @@ class Spieler {
     private int punkte;
     private int anzahlStein;
     private boolean isKI;
-    private Stein farbe; // Couleur des pions associés au joueur
+    private Stein farbe; // Farbe der Spielfiguren, die dem Spieler zugeordnet sind
 
     public Spieler(String name, Stein farbe, boolean isKI) {
         this.name = name;
         this.isKI = isKI;
         this.punkte = 0;
-        this.farbe = farbe; // Stein.WEISS_STEIN ou Stein.SCHWARTZ_STEIN
+        this.farbe = farbe; // Stein.WEISS_STEIN oder Stein.SCHWARTZ_STEIN
         this.anzahlStein = 0;
     }
 
@@ -59,12 +59,12 @@ class Spieler {
         return anzahlStein;
     }
 
-    void setAnzahlStein(int anzahlStein) {
+    public void setAnzahlStein(int anzahlStein) {
         this.anzahlStein = anzahlStein;
     }
 
-    public void erhoehePunkte() {
-        this.punkte += 4;
+    public void erhoehePunkte(int punkte) {
+        this.punkte += punkte;
     }
 
     public boolean isKI() {
@@ -86,15 +86,15 @@ public class Spielfeld {
     private final int[] feld;
     private Spieler spieler1;
     private Spieler spieler2;
-    private int turn; // 1 pour blanc, -1 pour noir
+    private int turn; // 1 für Weiß, -1 für Schwarz
     BestenPunktestandVerwalten best;
 
     public Spielfeld() {
         spieler1 = new Spieler("spieler1", Stein.WEISS_STEIN, false);
         spieler2 = new Spieler("spieler2", Stein.SCHWARTZ_STEIN, true);
-        turn = 1; // Le joueur blanc commence
+        turn = 1; // Der weiße Spieler beginnt.
         best = new BestenPunktestandVerwalten("bestScore.txt");
-        // initialisieren();
+        // Das Feld initialiseren
         feld = initialisieren();
     }
 
@@ -118,7 +118,7 @@ public class Spielfeld {
     // a2
     public boolean bewegenAusfuehren(int startIndex, int zielIndex) {
 
-        // Si c'est le tour de l'IA
+        // Ki ist dran
         if (getAktuellerSpieler().isKI()) {
             System.out.println("KI ist dran...");
             int[] besterZug = MinimaxSpieler.findeBestenZug(this);
@@ -129,7 +129,7 @@ public class Spielfeld {
                     System.out.println("KI zieht von " + besterZug[0] + " nach " + besterZug[1]);
                     wechselSpieler();
 
-                    // cal toString() method
+                    // ruf toString() Method auf
                     System.out.println(this);
 
                     if (istSpielAmEnde()) {
@@ -152,23 +152,23 @@ public class Spielfeld {
                 return false;
             }
         }
-        // Si c'est le tour du joueur humain
+        // Mensch ist dran
         else {
             try {
                 steinBewegen(startIndex, zielIndex);
                 wechselSpieler();
 
-                // Après le mouvement du joueur humain, faire jouer l'IA si c'est son tour
+                // Nach dem Zug des menschlichen Spielers soll die KI spielen, falls sie an der Reihe ist.
                 if (!istSpielAmEnde() && getAktuellerSpieler().isKI()) {
-                    return bewegenAusfuehren(0, 0); // Les paramètres sont ignorés pour l'IA
+                    return bewegenAusfuehren(0, 0); // Die Parameter werden für die KI ignoriert
                 }
 
-                // cal toString() method
+                // ruf toString() Method auf
                 System.out.println(this);
 
                 if (istSpielAmEnde()) {
                     System.out.println("Das Spiel ist bereits beendet. Gewinner: " + getGewinner());
-        
+
                     if (getGewinner().getPunkte() > best.getBesterPunktestand()) {
                         best.punktestandSpeichern(getGewinner().getPunkte());
                         System.out.println("Herzlichen Glueckwunsch, Sie haben den besten aktuellen Punktestand!");
@@ -239,10 +239,10 @@ public class Spielfeld {
     // a3
     private boolean dameSchlagen(int startIndex, int zielIndex) {
         int stein = feld[startIndex];
-        // Calculer la direction du mouvement
+        // Richtung berechnen
         int deltaX = (zielIndex / 8) - (startIndex / 8);
         int deltaY = (zielIndex % 8) - (startIndex % 8);
-        // Normaliser pour obtenir les pas unitaires
+
         int schrittX = Integer.compare(deltaX, 0);
         int schrittY = Integer.compare(deltaY, 0);
         int richtung = schrittX * 8 + schrittY;
@@ -251,7 +251,7 @@ public class Spielfeld {
         int aktuell = startIndex + richtung;
 
         // Position des zu schlagenden Steins finden
-        while (aktuell != zielIndex) {
+        while (istImSpielfeld(aktuell) && aktuell != zielIndex) {
             if (feld[aktuell] != 0) {
                 if (gegnerPosition == -1 && feld[aktuell] * stein < 0) {
                     gegnerPosition = aktuell;
@@ -264,7 +264,7 @@ public class Spielfeld {
 
         // Wenn ein gegnerischer Stein gefunden wurde und das Zielfeld leer ist
         if (gegnerPosition != -1 && feld[zielIndex] == 0) {
-            // Effectuer la capture
+            // Schlag ausführen
             schlagAusfuehren(startIndex, zielIndex, gegnerPosition);
             mehrfachschlaegePruefen(zielIndex);
 
@@ -277,19 +277,18 @@ public class Spielfeld {
     private boolean normalerSteinSchlagen(int startIndex, int zielIndex) {
         int stein = feld[startIndex];
 
-        // Calculer la différence entre la index de départ et d'arrivée
+        //  der Unterschied zwischen dem Start- und dem Endindex berechnen
         int deltaIndex = zielIndex - startIndex;
 
-        // Vérifier si le mouvement est une capture (distance de 2 cases en diagonal)
+        // nach einem möglichen Schlag prüfen
         if (Math.abs(deltaIndex) == 14 || Math.abs(deltaIndex) == 18) {
-            // Calculer la index du pion à capturer
             int gegnerIndex = startIndex + (deltaIndex / 2);
 
-            // Vérifier si :
-            // 1. Le mouvement est sur une diagonale valide
-            // 2. La case cible est vide
-            // 3. Il y a un pion adverse à capturer
-            // 4. Le mouvement reste dans les limites du plateau
+            // Überprüfen, ob:
+            // Die Bewegung auf einer gültigen Diagonale ist
+            // Das Ziel-Feld leer ist
+            // Ein gegnerischer Stein zu ergreifen ist
+            // Die Bewegung innerhalb der Grenzen des Spielfeldes bleibt
             if (istGueltigeDiagonale(startIndex, zielIndex) &&
                     feld[zielIndex] == 0 &&
                     feld[gegnerIndex] != 0 &&
@@ -313,7 +312,14 @@ public class Spielfeld {
         // Punktestand und Steinanzahl aktualisieren
         Spieler gegner = getGegnerSpieler();
         gegner.setAnzahlStein(gegner.getAnzahlStein() - 1);
-        getAktuellerSpieler().erhoehePunkte();
+
+        // überprüft , ob der geschlagene Stein eine Dame ist
+        int gegnerStein = Math.abs(feld[gegnerPosition]);
+        if (gegnerStein == Stein.WEISS_KOENIGEN.getWert() || gegnerStein == Stein.SCHWARTZ_KOENIGEN.getWert()) {
+            getAktuellerSpieler().erhoehePunkte(6); // 6 Punkte für eine Dame hinzufügen
+        } else {
+            getAktuellerSpieler().erhoehePunkte(4); // 4 Punkte für einen normalen Stein hinzufügen
+        }
     }
 
     private void mehrfachschlaegePruefen(int index) {
@@ -332,7 +338,7 @@ public class Spielfeld {
         }
     }
 
-    // Promotion en Dame
+    // Beforderung zur Dame
     private void dameBeforderungPruefen(int zielIndex) {
         int stein = feld[zielIndex];
         if ((zielIndex / 8 == 0 && stein == Stein.SCHWARTZ_STEIN.getWert()) ||
@@ -344,15 +350,13 @@ public class Spielfeld {
     // a7
     public int[] zeigeZugMoeglichkeit(int index) {
         ArrayList<Integer> moeglicheBewegung = new ArrayList<>();
-        // Vérification si l'index est dans le plateau
-
+        // Index innerhalb der Grenzen des Spielfeldes bleibt
         if (!istImSpielfeld(index)) {
             throw new IllegalArgumentException("Der ausgewaehlte Stein ist außerhalb des Spielfelds.");
         }
-
+        
+        // überprüft , ob das Feld einen Stein enthält
         int stein = feld[index];
-        // Vérification si la case contient un pion
-
         if (stein == 0) {
             throw new IllegalArgumentException("Das ausgewaelte Feld ist leer.");
         }
@@ -360,8 +364,7 @@ public class Spielfeld {
         boolean istKoenigen = Math.abs(stein) == 2;
 
         if (istKoenigen) {
-            // Directions diagonales pour la dame (-9: haut-gauche, -7: haut-droite, 7:
-            // bas-gauche, 9: bas-droite)
+          // Diagonale Richtungen für die Dame (-9: oben-links, -7: oben-rechts, 7: unten-links, 9: unten-rechts
             int[] diagonalen = { -9, -7, 7, 9 };
 
             for (int diagonale : diagonalen) {
@@ -371,24 +374,23 @@ public class Spielfeld {
 
                 while (istImSpielfeld(zielIndex) && istGueltigeDiagonale(index, zielIndex)) {
                     if (feld[zielIndex] == 0) {
-                        // Case vide - mouvement possible si on n'a pas encore trouvé d'adversaire
+                        // Leeres Feld - Bewegung möglich, wenn noch kein Gegner gefunden wurde
                         if (!gefundenGegner) {
                             moeglicheBewegung.add(zielIndex);
                         }
                     } else if (feld[zielIndex] * stein < 0) {
-                        // Pion adverse trouvé
+                        //  wenn einen gegnerischen Stein wird gefunfen
                         if (!gefundenGegner) {
                             gefundenGegner = true;
-                            // Vérifier la case suivante pour la capture
+                            // Überprüft das nächste Feld auf die Ergreifung
                             int nextIndex = zielIndex + diagonale;
                             if (istImSpielfeld(nextIndex) && feld[nextIndex] == 0
                                     && istGueltigeDiagonale(zielIndex, nextIndex)) {
                                 moeglicheBewegung.add(nextIndex);
                             }
                         }
-                        break;
                     } else {
-                        // Pion allié trouvé
+                        // wenn einen Stein des aktuellen Spieler gefunden wird
                         break;
                     }
                     schritte++;
@@ -396,16 +398,14 @@ public class Spielfeld {
                 }
             }
         } else {
-            // Code pour les pions normaux
+            // für normalen Stein  
             boolean istWeiss = stein > 0;
             int richtung = istWeiss ? 8 : -8;
-            // Déplacements possibles selon la couleur
 
             int[] diagonalen = { richtung - 1, richtung + 1 };
 
             for (int diagonale : diagonalen) {
                 int zielIndex = index + diagonale;
-                // Vérification des conditions de validité
 
                 if (istImSpielfeld(zielIndex)
                         && feld[zielIndex] == 0
@@ -415,7 +415,7 @@ public class Spielfeld {
                 }
             }
 
-            // Vérification des captures possibles
+            // mögliche Schlag überprüfen
             int[] diagonalenSchlag = { richtung - 1, richtung + 1 };
             for (int diagonale : diagonalenSchlag) {
                 int gegnerIndex = index + diagonale;
@@ -434,25 +434,7 @@ public class Spielfeld {
     }
     // a7
 
-    // Méthode auxiliaire mise à jour pour vérifier la validité d'une diagonale
-    private boolean istGueltigeDiagonale(int start, int ziel) {
-        int startZeile = start / 8;
-        int startSpalte = start % 8;
-        int zielZeile = ziel / 8;
-        int zielSpalte = ziel % 8;
-
-        int deltaZeile = Math.abs(zielZeile - startZeile);
-        int deltaSpalte = Math.abs(zielSpalte - startSpalte);
-
-        // Le mouvement doit être diagonal (même distance en horizontal et vertical)
-        // et la case d'arrivée doit être sur une case noire (somme des coordonnées
-        // impaire)
-        return deltaZeile == deltaSpalte &&
-                ((zielZeile + zielSpalte) % 2 == 1);
-    }
-
     @Override
-
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(spieler1).append("\n");
@@ -493,8 +475,7 @@ public class Spielfeld {
         return spieler1.getAnzahlStein() == 0 || spieler2.getAnzahlStein() == 0;
     }
 
-    // Méthode auxiliaire : Vérifie si le déplacement reste dans une même ligne
-    // diagonale valide
+    // Hilfsmethode: Überprüft, ob die Bewegung in der gleichen gültigen Diagonalen bleibt
     private boolean istGleicheZeileOderDiagonal(int start, int ziel) {
         int startZeile = start / 8;
         int zielZeile = ziel / 8;
@@ -502,12 +483,25 @@ public class Spielfeld {
         return Math.abs(startZeile - zielZeile) == 1; // Doit être une seule ligne plus haut ou plus bas
     }
 
-    private boolean istSteinDesSpielers(int stein) {
-        // Vérifie si le joueur actuel contrôle le pion
+    // Aktualisierte Hilfsmethode zur Überprüfung der Gültigkeit einer Diagonalen
+    private  boolean istGueltigeDiagonale(int start, int ziel) {
+        int startZeile = start / 8;
+        int startSpalte = start % 8;
+        int zielZeile = ziel / 8;
+        int zielSpalte = ziel % 8;
+
+        int deltaZeile = Math.abs(zielZeile - startZeile);
+        int deltaSpalte = Math.abs(zielSpalte - startSpalte);
+
+        return deltaZeile == deltaSpalte &&
+                ((zielZeile + zielSpalte) % 2 == 1);
+    }
+
+    boolean istSteinDesSpielers(int stein) {
         if (turn == 1) {
-            return stein > 0; // Pions blancs ou dames blanches
+            return stein > 0; 
         } else {
-            return stein < 0; // Pions noirs ou dames noires
+            return stein < 0; 
         }
     }
 
@@ -516,10 +510,18 @@ public class Spielfeld {
     }
 
     public void wechselSpieler() {
-        turn = (turn == 1) ? -1 : 1; // Alterne entre 1 et -1
+        turn = (turn == 1) ? -1 : 1; 
     }
 
-    private Spieler getGegnerSpieler() {
+    public BestenPunktestandVerwalten getBestenPunktestandVerwalten() {
+        return this.best;
+    }
+
+    public int[] getFeld() {
+        return feld;
+    }
+
+    Spieler getGegnerSpieler() {
         return (getAktuellerSpieler() == spieler1) ? spieler2 : spieler1;
     }
 
@@ -531,10 +533,6 @@ public class Spielfeld {
         }
     }
 
-    public int[] getFeld() {
-        return feld;
-    }
-
     Spieler getSpieler1() {
         return spieler1;
     }
@@ -543,63 +541,8 @@ public class Spielfeld {
         return spieler2;
     }
 
-    public BestenPunktestandVerwalten getBestenPunktestandVerwalten() {
-        return this.best;
-    }
-
 }
 
-// a6
-class BestenPunktestandVerwalten {
-    int besterPunktestand;
-    String datei = "bestScore.txt";
-
-    BestenPunktestandVerwalten(String datei) {
-        this.datei = datei;
-        besterPunktestand = 0;
-        punktestandLesen();
-    }
-
-    // Méthode pour lire le meilleur score à partir du fichier
-    int punktestandLesen() {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(datei));
-            String zeile = br.readLine();
-            br.close();
-            if (zeile != null && !zeile.isEmpty()) {
-                besterPunktestand = Integer.parseInt(zeile);
-            } else {
-                besterPunktestand = 0;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return besterPunktestand;
-    }
-
-    // Méthode pour enregistrer un nouveau score si c'est un meilleur score
-    void punktestandSpeichern(int neuerPunktestand) {
-        if (neuerPunktestand > besterPunktestand) {
-            besterPunktestand = neuerPunktestand;
-
-            try {
-                BufferedWriter wr = new BufferedWriter(new FileWriter(datei));
-                wr.write(Integer.toString(besterPunktestand));
-                wr.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    int getBesterPunktestand() {
-        return this.besterPunktestand;
-    }
-}
-
-// a6
 class MinimaxSpieler {
     private static final int MAX_TIEFE = 5;
 
@@ -609,9 +552,8 @@ class MinimaxSpieler {
         int besterStart = -1;
         int besterZiel = -1;
 
-        // Parcourir tous les pions du joueur actuel
         for (int i = 0; i < 64; i++) {
-            // Vérifier si c'est un pion du joueur actuel
+            // überprufen , ob es einen Stein des aktuelles  Spieler
             if ((spielfeld.getAktuellerSpieler().getFarbe() == Stein.SCHWARTZ_STEIN && spielfeld.getFeld()[i] < 0) ||
                     (spielfeld.getAktuellerSpieler().getFarbe() == Stein.WEISS_STEIN && spielfeld.getFeld()[i] > 0)) {
 
@@ -619,11 +561,16 @@ class MinimaxSpieler {
                     int[] moeglicheZuege = spielfeld.zeigeZugMoeglichkeit(i);
 
                     for (int zielPosition : moeglicheZuege) {
-                        // Créer une copie du plateau pour la simulation
+
+                        if (!spielfeld.istImSpielfeld(i) || !spielfeld.istImSpielfeld(zielPosition)) {
+                            continue; // ungültige Index werden ignoriert
+                        }
+
+                        // Erstellung  eine Kopie des Spielfelds für die Simulation
                         Spielfeld testSpielfeld = new Spielfeld();
                         System.arraycopy(spielfeld.getFeld(), 0, testSpielfeld.getFeld(), 0, 64);
 
-                        // S'assurer que c'est le bon joueur qui joue
+                        // Sicherstellen, dass der richtige Spieler am Zug ist
                         while (testSpielfeld.getAktuellerSpieler().getFarbe() != spielfeld.getAktuellerSpieler()
                                 .getFarbe()) {
                             testSpielfeld.wechselSpieler();
@@ -640,12 +587,12 @@ class MinimaxSpieler {
                                 besterZiel = zielPosition;
                             }
                         } catch (IllegalArgumentException e) {
-                            // Ignorer les mouvements invalides
+                            // ungültige Index werden ignoriert
                             continue;
                         }
                     }
                 } catch (IllegalArgumentException e) {
-                    // Ignorer les positions sans mouvements possibles
+                    // Positionen ohne mögliche Bewegungen ignorieren
                     continue;
                 }
             }
@@ -674,10 +621,15 @@ class MinimaxSpieler {
                         int[] moeglicheZuege = spielfeld.zeigeZugMoeglichkeit(i);
 
                         for (int zielPosition : moeglicheZuege) {
+
+                            if (!spielfeld.istImSpielfeld(i) || !spielfeld.istImSpielfeld(zielPosition)) {
+                                continue; // ungültige Index werden ignoriert
+                            }
+
                             Spielfeld testSpielfeld = new Spielfeld();
                             System.arraycopy(spielfeld.getFeld(), 0, testSpielfeld.getFeld(), 0, 64);
 
-                            // Synchroniser le joueur actuel
+                            // Aktuellen Spieler synchronisieren
                             while (testSpielfeld.getAktuellerSpieler().getFarbe() != spielfeld.getAktuellerSpieler()
                                     .getFarbe()) {
                                 testSpielfeld.wechselSpieler();
@@ -717,7 +669,7 @@ class MinimaxSpieler {
                             Spielfeld testSpielfeld = new Spielfeld();
                             System.arraycopy(spielfeld.getFeld(), 0, testSpielfeld.getFeld(), 0, 64);
 
-                            // Synchroniser le joueur actuel
+                            // Aktuellen Spieler synchronisieren
                             while (testSpielfeld.getAktuellerSpieler().getFarbe() != spielfeld.getAktuellerSpieler()
                                     .getFarbe()) {
                                 testSpielfeld.wechselSpieler();
@@ -814,3 +766,54 @@ class MinimaxSpieler {
         return false;
     }
 }
+
+// a6
+class BestenPunktestandVerwalten {
+    int besterPunktestand;
+    String datei = "bestScore.txt";
+
+    BestenPunktestandVerwalten(String datei) {
+        this.datei = datei;
+        besterPunktestand = 0;
+        punktestandLesen();
+    }
+
+    // Methode zum Lesen des besten Scores aus der Datei
+    int punktestandLesen() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(datei));
+            String zeile = br.readLine();
+            br.close();
+            if (zeile != null && !zeile.isEmpty()) {
+                besterPunktestand = Integer.parseInt(zeile);
+            } else {
+                besterPunktestand = 0;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return besterPunktestand;
+    }
+
+    // Methode zum Speichern eines neuen Scores, wenn es ein besserer Score ist
+    void punktestandSpeichern(int neuerPunktestand) {
+        if (neuerPunktestand > besterPunktestand) {
+            besterPunktestand = neuerPunktestand;
+
+            try {
+                BufferedWriter wr = new BufferedWriter(new FileWriter(datei));
+                wr.write(Integer.toString(besterPunktestand));
+                wr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    int getBesterPunktestand() {
+        return this.besterPunktestand;
+    }
+}
+// a6

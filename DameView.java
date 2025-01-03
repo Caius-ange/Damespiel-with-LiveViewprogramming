@@ -4,9 +4,7 @@ public class DameView {
     Spielfeld spielfeld;
 
     public DameView(Spielfeld spielfeld) {
-        // Initialisation du tableau
         this.spielfeld = spielfeld;
-        // Afficher le damier
         druckeBrett(this.spielfeld);
     }
 
@@ -48,19 +46,18 @@ public class DameView {
         t.forward(quadratGroesse);
     }
 
-    // method to draw a Pawn with a given color
     public void zeichneStein(Turtle t, int index, int quadratGroesse, int r, int g, int b) {
         t.penUp();
         int[] koordinat = indexZuKoordinaten(index);
         t.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
 
-        t.forward(quadratGroesse / 2); // Aller au centre de la case
-        t.right(90); // Tourner pour se positionner au centre
-        t.forward(quadratGroesse / 3 - 5); // Ajustement léger
-        t.left(90); // Tourner pour dessiner dans la bonne direction
+        t.forward(quadratGroesse / 2); 
+        t.right(90); 
+        t.forward(quadratGroesse / 3 - 5); 
+        t.left(90); 
 
         for (int i = 0; i < (quadratGroesse / 3 - 5); i++) {
-            zeichneKreis(t, (quadratGroesse / 3 - 5) - i / 3, r, g, b); // Appel pour dessiner un cercle plein
+            zeichneKreis(t, (quadratGroesse / 3 - 5) - i / 3, r, g, b); 
         }
 
     }
@@ -70,13 +67,13 @@ public class DameView {
         int[] koordinat = indexZuKoordinaten(index);
         t.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
 
-        t.forward(quadratGroesse / 2); // Aller au centre de la case
-        t.right(90); // Tourner pour se positionner au centre
-        t.forward(quadratGroesse / 3 - 5); // Ajustement léger
-        t.left(90); // Tourner pour dessiner dans la bonne direction
+        t.forward(quadratGroesse / 2); 
+        t.right(90); 
+        t.forward(quadratGroesse / 3 - 5); 
+        t.left(90); 
 
         for (int i = 0; i < (quadratGroesse / 3 - 5); i++) {
-            zeichneKreis(t, (quadratGroesse / 3 - 5) - i, r, g, b); // Appel pour dessiner un cercle plein
+            zeichneKreis(t, (quadratGroesse / 3 - 5) - i, r, g, b); 
         }
 
     }
@@ -89,17 +86,17 @@ public class DameView {
     }
 
     void zeichneKreis(Turtle t, int kreisGroesse, int r, int g, int b) {
-        t.color(r, g, b); // Définir la couleur
+        t.color(r, g, b); 
         t.penDown();
 
-        // Pour dessiner un cercle plein
-        int segments = 36; // Nombre de segments pour le cercle
-        double angle = 360.0 / segments; // Angle de chaque segment
-        double step = 2 * Math.PI * kreisGroesse / segments; // Longueur de chaque segment
+       
+        int segments = 36; 
+        double angle = 360.0 / segments; 
+        double step = 2 * Math.PI * kreisGroesse / segments; 
 
         for (int i = 0; i < segments; i++) {
-            t.forward(step); // Avancer d'un segment
-            t.right(angle); // Tourner pour suivre le cercle
+            t.forward(step); 
+            t.right(angle);
         }
 
         t.penUp();
@@ -166,7 +163,6 @@ public class DameView {
         int kiPunkte = spielfeld.getSpieler2().getPunkte(); 
         int kiSteine = spielfeld.getSpieler2().getAnzahlStein();
 
-        // si le jeu est terminé, afficher le message de fin
         if (spielfeld.istSpielAmEnde()) {
             Turtle newInfoTurtle = new Turtle(480, 100);
 

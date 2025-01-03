@@ -10,15 +10,15 @@ Clerk.markdown(
    
    ## Inhaltsverzeichnis
    
-1. [Allgemeine Einführung](#1-allgemeine-einführung)
+1. [Allgemeine Einführung](#1-allgemeine-einfuehrung)
 2. [Beschreibung der Hauptkomponenten](#2-beschreibung-der-hauptkomponenten)
-      - [Spiellogik: Hauptklasse Spielfeld](#a-spiellogik-hauptklasse-spielfeld)
-      - [Grafische Darstellung: Klasse DameView](#b-grafische-darstellung-klasse-dameview)
-      - [Spielsteuerung: Klasse DameSpiel](#c-spielsteuerung-klasse-damespiel)
+    - [Spiellogik: Hauptklasse Spielfeld](#a-spiellogik-hauptklasse-spielfeld)
+    - [Grafische Darstellung: Klasse DameView](#b-grafische-darstellung-klasse-dameview)
+    - [Spielsteuerung: Klasse DameSpiel](#c-spielsteuerung-klasse-damespiel)
 3. [Erklärung der wichtigsten Methoden](#3-erklärung-der-wichtigsten-methoden)
-      - [Methoden in DameSpiel](#a-methoden-in-damespiel)
-      - [Methoden in Spielfeld](#b-methoden-in-spielfeld)
-      - [Methoden in DameView](#c-methoden-in-dameview)
+    - [Methoden in DameSpiel](#a-methoden-in-damespiel)
+    - [Methoden in Spielfeld](#b-methoden-in-spielfeld)
+    - [Methoden in DameView](#c-methoden-in-dameview)
 4. [Datenstruktur und Spielmechanik](#4-datenstruktur-und-spielmechanik)
 5. [KI und Minimax-Strategie](#5-ki-und-minimax-strategie)
 6. [Ausführung und Benutzerinteraktion](#6-ausführung-und-benutzerinteraktion)
@@ -156,7 +156,8 @@ Implementiert die KI mithilfe des Minimax-Algorithmus.
 **findeBestenZug(Spielfeld)**: Findet den besten möglichen Zug für die KI. 
 
 **minimax(Spielfeld spielfeld, int tiefe, boolean istMaximierend, int alpha, int beta)**: Bewertet Spielzustände rekursiv.
-bewerteStellung(Spielfeld): Bewertet eine gegebene Spielstellung.
+
+**bewerteStellung(Spielfeld)**: Bewertet eine gegebene Spielstellung.
 ```java
 ${0}
 ```
@@ -168,7 +169,8 @@ Clerk.markdown(
 ## 5. Ausführung und Benutzerinteraktion
 **Initialisierung**:
 Die Klasse DameSpiel erstellt ein Spielfeld-Objekt und ein DameView-Objekt.
-Das Spielfeld wird mit DameView gerendert.  
+Das Spielfeld wird mit DameView gerendert.   
+
 **Spielerbewegungen**:
 Bewegungen werden in DameSpiel ausgelöst.
 Die Spiellogik in Spielfeld überprüft die Gültigkeit und führt Bewegungen aus.
@@ -177,8 +179,9 @@ Nach jeder Bewegung aktualisiert DameView das Spielfeld grafisch.
 ## 6. Datenstruktur und Spielmechanik
 **Spielfeld**: Ein 1D-Array (feld) mit 64 Feldern. Indizes von 0 bis 63 repräsentieren die Felder linear. 
 
-**Figuren**:Positive Werte für weiße Figuren, negative Werte für schwarze Figuren.  
-**Damen** haben absolute Werte von 2.
+**Figuren**:Positive Werte für weiße Figuren, negative Werte für schwarze Figuren.    
+
+**Normale Steine** haben absolute Werte von 1 und **Damen** haben absolute Werte von 2.
 
 """));
 
@@ -187,7 +190,7 @@ Clerk.markdown(
    """
 ## 7. Features
 ### Die Klasse BestenPunktestandVerwalten
- verwaltet das Lesen, Schreiben und Aktualisieren des höchsten Punktestands eines Spiels durch Interaktion mit einer Textdatei, die in der Regel als "bestScore.txt" benannt ist. Bei ihrer Erstellung initialisiert sie den höchsten Punktestand (besterPunktestand) auf 0 und versucht, einen vorhandenen Punktestand über die Methode punktestandLesen() aus der Datei zu lesen. Wenn ein neuer Punktestand den aktuellen höchsten Punktestand übertrifft, aktualisiert die Methode punktestandSpeichern(int) die Datei und den Punktestand im Speicher. Die Methode punktestandSpeichernSpieler(Spieler gewinner) ermöglicht es, den Punktestand eines siegreichen Spielers direkt zu speichern. Die robuste Fehlerbehandlung stellt sicher, dass die Anwendung auch dann funktioniert, wenn die Datei fehlt oder beschädigt ist. Diese Klasse ist essenziell, um die höchsten Punktestände zwischen Spielsessions zu speichern und zu vergleichen.
+ verwaltet das Lesen, Schreiben und Aktualisieren des höchsten Punktestands eines Spiels durch Interaktion mit einer Textdatei, die in der Regel als "bestScore.txt" benannt ist. Bei ihrer Erstellung initialisiert sie den höchsten Punktestand (besterPunktestand) auf 0 und versucht, einen vorhandenen Punktestand über die Methode punktestandLesen() aus der Datei zu lesen. Wenn ein neuer Punktestand den aktuellen höchsten Punktestand übertrifft, aktualisiert die Methode punktestandSpeichern(int) die Datei und den Punktestand im Speicher. Die robuste Fehlerbehandlung stellt sicher, dass die Anwendung auch dann funktioniert, wenn die Datei fehlt oder beschädigt ist. Diese Klasse ist essenziell, um die höchsten Punktestände zwischen Spielsessions zu speichern und zu vergleichen.
 ```java
 ${0}
 ```
