@@ -23,7 +23,8 @@ Clerk.markdown(
 5. [KI und Minimax-Strategie](#5-ki-und-minimax-strategie)
 6. [Ausführung und Benutzerinteraktion](#6-ausführung-und-benutzerinteraktion)
 7. [Features](#7-features)
-   
+  
+---
    
 ## 1. Allgemeine Einführung
 Dieses Projekt simuliert ein Dame-Spiel mit zwei Hauptaspekten:  
@@ -46,7 +47,7 @@ Zentrale Verwaltung des Spielfeldes und der Spielregeln.
 **turn**: Bestimmt, welcher Spieler am Zug ist (1 für weiß, -1 für schwarz).
    
 #### Wichtige Methoden:
-**initialisieren()**: Initialisiert das Spielfeld.  
+**initialisieren()**: Initialisiert das Spielfeld. 
 
 **bewegenAusuehren(int startIndex, int zielIndex)**: Führt eine Bewegung aus. 
    
@@ -65,10 +66,15 @@ Zeichnet das Spielfeld und die Spielfiguren mithilfe einer Turtle-Grafikbiblioth
 
 -Zeichnen des Spielfelds mit hellbraunen und dunklen Quadraten.
 
--Darstellung von Spielfiguren (Pawns und Damen) in schwarz und weiß. 
+-Darstellung von Spielfiguren (Steine und Damen) in schwarz und weiß. 
 
--Dynamische Aktualisierung des Bretts nach jeder Bewegung.
-   
+-Dynamische Aktualisierung des Bretts nach jeder Bewegung."""));
+        
+DameSpiel d = new DameSpiel();
+    
+Clerk.markdown(
+    Text.fillOut(
+   """
 ### c. Spielsteuerung: Klasse DameSpiel
 Verbindet die Spiellogik (Spielfeld) mit der Darstellung (DameView). 
 
@@ -88,6 +94,8 @@ Verbindet die Spiellogik (Spielfeld) mit der Darstellung (DameView).
 ${0}
 ```
 """, Text.cutOut("./DameSpiel.java", "// a1")));
+
+DameSpiel c = new DameSpiel();
   
 Clerk.markdown(
     Text.fillOut(
@@ -120,7 +128,13 @@ Clerk.markdown(
    """
 #### -Dame-Beförderung
 **dameBeforderungPruefen(int zielIndex)**: Überprüft, ob eine Figur das gegenüberliegende Ende des Spielfelds erreicht und zur Dame befördert wird.
+"""));
+              
+DameSpiel a = new DameSpiel();
 
+Clerk.markdown(
+    Text.fillOut(
+   """
 #### c. Methoden in DameView
 Verwendet zeichneStein und zeichneKoenigen, um normale Figuren und Damen darzustellen.
 #### -zeichneBrett(Turtle t, int quadratGroesse)
@@ -190,7 +204,7 @@ Clerk.markdown(
    """
 ## 7. Features
 ### Die Klasse BestenPunktestandVerwalten
- verwaltet das Lesen, Schreiben und Aktualisieren des höchsten Punktestands eines Spiels durch Interaktion mit einer Textdatei, die in der Regel als "bestScore.txt" benannt ist. Bei ihrer Erstellung initialisiert sie den höchsten Punktestand (besterPunktestand) auf 0 und versucht, einen vorhandenen Punktestand über die Methode punktestandLesen() aus der Datei zu lesen. Wenn ein neuer Punktestand den aktuellen höchsten Punktestand übertrifft, aktualisiert die Methode punktestandSpeichern(int) die Datei und den Punktestand im Speicher. Die robuste Fehlerbehandlung stellt sicher, dass die Anwendung auch dann funktioniert, wenn die Datei fehlt oder beschädigt ist. Diese Klasse ist essenziell, um die höchsten Punktestände zwischen Spielsessions zu speichern und zu vergleichen.
+ verwaltet das Lesen, Schreiben und Aktualisieren des höchsten Punktestands eines Spiels durch Interaktion mit einer Textdatei, die in der Regel als "BestScore.txt" benannt ist. Bei ihrer Erstellung initialisiert sie den höchsten Punktestand (besterPunktestand) auf 0 und versucht, einen vorhandenen Punktestand über die Methode punktestandLesen() aus der Datei zu lesen. Wenn ein neuer Punktestand den aktuellen höchsten Punktestand übertrifft, aktualisiert die Methode punktestandSpeichern(int) die Datei und den Punktestand im Speicher. Die robuste Fehlerbehandlung stellt sicher, dass die Anwendung auch dann funktioniert, wenn die Datei fehlt oder beschädigt ist. Diese Klasse ist essenziell, um die höchsten Punktestände zwischen Spielsessions zu speichern und zu vergleichen.
 ```java
 ${0}
 ```
@@ -211,18 +225,45 @@ public class DameSpiel {
     private Spielfeld spielfeld;
     private DameView view;
 
+
     public DameSpiel() {
         this.spielfeld = new Spielfeld();
         this.view = new DameView(this.spielfeld);
     }
-
     // a1
-    public void steinBewegenAusfuehren(int startIndex, int zielIndex) {
-
-        spielfeld.bewegenAusfuehren(startIndex, zielIndex);  
-
-        // Afficher le damier
+    public void steinBewegenAusfuehren(String startIndex, String zielIndex) {
+        int start = konvertierePosition(startIndex );
+        int ziel = konvertierePosition(zielIndex);
+    
+        spielfeld.bewegenAusfuehren(start, ziel);  
         this.view.druckeBrett(this.spielfeld);
     }
-    // a1
+
+    public int konvertierePosition(String position) {
+        if (position == null || position.length() < 2) {
+            throw new IllegalArgumentException("Ungültige Position: " + position);
+        }
+        
+        char spalteChar = position.charAt(0); // Buschstabe
+        char zeileChar = position.charAt(1); // Zahl
+        
+        int spalte = Character.toLowerCase(spalteChar) - 'a';
+        if (spalte < 0 || spalte >= 8) {
+            throw new IllegalArgumentException("Ungültige Spalte: " + spalteChar);
+        }
+        
+        int zeile = Character.getNumericValue(zeileChar) - 1;
+        if (zeile < 0 || zeile >= 8) { 
+            throw new IllegalArgumentException("Ungültige Zeile: " + zeileChar);
+        }
+        
+        return zeile * 8 + spalte;
+    }
+
+    public String toString() {
+        return spielfeld.toString();
+    }
+ // a1
+
 }
+

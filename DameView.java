@@ -1,5 +1,7 @@
 public class DameView {
-    Turtle turtle;
+    Turtle turtle = new Turtle(480, 480);
+    Turtle infoTurtle = new Turtle(480, 60);
+
     int quadratGroesse = 60;
     Spielfeld spielfeld;
 
@@ -9,71 +11,70 @@ public class DameView {
     }
 
     Turtle initTurtle() {
-        Turtle newTurtle = new Turtle(480, 480);
-        newTurtle.penUp();
-        newTurtle.backward(240);
-        newTurtle.left(90);
-        newTurtle.forward(240);
-        newTurtle.right(90);
-        newTurtle.penDown();
+        turtle.penUp();
+        turtle.backward(240);
+        turtle.left(90);
+        turtle.forward(240);
+        turtle.right(90);
+        turtle.penDown();
 
-        return newTurtle;
+        return turtle;
     }
 
-    public void zeichneQuadratUndFuelle(Turtle t, int quadratGroesse, int r, int g, int b) {
-        t.penDown();
+    public void zeichneQuadratUndFuelle(int quadratGroesse, int r, int g, int b) {
+        turtle.penDown();
 
         for (int i = 0; i < 4; i++) {
-            t.forward(quadratGroesse);
-            t.right(90);
+            turtle.forward(quadratGroesse);
+            turtle.right(90);
         }
 
         for (int i = 0; i < quadratGroesse; i++) {
-            t.color(r, g, b);
-            t.penUp();
-            t.right(90);
-            t.forward(1);
-            t.left(90);
-            t.penDown();
-            t.forward(quadratGroesse);
-            t.penUp();
-            t.backward(quadratGroesse);
+            turtle.color(r, g, b);
+            turtle.penUp();
+            turtle.right(90);
+            turtle.forward(1);
+            turtle.left(90);
+            turtle.penDown();
+            turtle.forward(quadratGroesse);
+            turtle.penUp();
+            turtle.backward(quadratGroesse);
         }
-        t.penUp();
-        t.right(90);
-        t.backward(quadratGroesse);
-        t.left(90);
-        t.forward(quadratGroesse);
+        turtle.penUp();
+        turtle.right(90);
+        turtle.backward(quadratGroesse);
+        turtle.left(90);
+        turtle.forward(quadratGroesse);
     }
 
-    public void zeichneStein(Turtle t, int index, int quadratGroesse, int r, int g, int b) {
-        t.penUp();
+    public void zeichneStein(int index, int quadratGroesse, int r, int g, int b) {
+        turtle.penUp();
         int[] koordinat = indexZuKoordinaten(index);
-        t.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
+        turtle.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
 
-        t.forward(quadratGroesse / 2); 
-        t.right(90); 
-        t.forward(quadratGroesse / 3 - 5); 
-        t.left(90); 
+        turtle.forward(quadratGroesse / 2);
+        turtle.right(90);
+        turtle.forward(quadratGroesse / 3 - 5);
+        turtle.left(90);
 
         for (int i = 0; i < (quadratGroesse / 3 - 5); i++) {
-            zeichneKreis(t, (quadratGroesse / 3 - 5) - i / 3, r, g, b); 
+            zeichneKreis((quadratGroesse / 3 - 5) - i / 3, r, g, b);
         }
 
     }
 
-    public void zeichneKoenigen(Turtle t, int index, int quadratGroesse, int r, int g, int b) {
-        t.penUp();
+    public void zeichneKoenigen(int index, int quadratGroesse, int r, int g, int b) {
+        turtle.penUp();
         int[] koordinat = indexZuKoordinaten(index);
-        t.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
+        turtle.moveTo(koordinat[0] * quadratGroesse, koordinat[1] * quadratGroesse);
 
-        t.forward(quadratGroesse / 2); 
-        t.right(90); 
-        t.forward(quadratGroesse / 3 - 5); 
-        t.left(90); 
+        turtle.forward(quadratGroesse / 2);
+        turtle.right(90);
+        turtle.forward(quadratGroesse / 3 - 5);
+        turtle.left(90);
 
         for (int i = 0; i < (quadratGroesse / 3 - 5); i++) {
-            zeichneKreis(t, (quadratGroesse / 3 - 5) - i, r, g, b); 
+            zeichneKreis((quadratGroesse / 3 - 5) - i, r, g, b);
         }
 
     }
@@ -85,87 +86,100 @@ public class DameView {
         return koordinat;
     }
 
-    void zeichneKreis(Turtle t, int kreisGroesse, int r, int g, int b) {
-        t.color(r, g, b); 
-        t.penDown();
+    void zeichneKreis(int kreisGroesse, int r, int g, int b) {
+        turtle.color(r, g, b);
+        turtle.penDown();
 
-       
-        int segments = 36; 
-        double angle = 360.0 / segments; 
-        double step = 2 * Math.PI * kreisGroesse / segments; 
+        int segments = 36;
+        double angle = 360.0 / segments;
+        double step = 2 * Math.PI * kreisGroesse / segments;
 
         for (int i = 0; i < segments; i++) {
-            t.forward(step); 
-            t.right(angle);
+            turtle.forward(step);
+            turtle.right(angle);
         }
 
-        t.penUp();
+        turtle.penUp();
     }
 
-    void zeichneBrett(Turtle t, int quadratGroesse) {
+    void zeichneBrett() {
         boolean beginntMitHellBraun = true;
 
         for (int i = 0; i < 64; i++) {
             if (i % 8 == 0 && i != 0) {
                 beginntMitHellBraun = !beginntMitHellBraun;
-                t.penUp();
-                t.backward(8 * quadratGroesse);
-                t.right(90);
-                t.forward(quadratGroesse);
-                t.left(90);
-                t.penDown();
+                turtle.penUp();
+                turtle.backward(8 * quadratGroesse);
+                turtle.right(90);
+                turtle.forward(quadratGroesse);
+                turtle.left(90);
+                turtle.penDown();
             }
             if (beginntMitHellBraun) {
-                zeichneQuadratUndFuelle(t, quadratGroesse, 255, 228, 196);
+                zeichneQuadratUndFuelle(quadratGroesse, 255, 228, 196);
                 beginntMitHellBraun = false;
             } else {
-                zeichneQuadratUndFuelle(t, quadratGroesse, 139, 69, 19);
+                zeichneQuadratUndFuelle(quadratGroesse, 139, 69, 19);
                 beginntMitHellBraun = true;
             }
         }
     }
+
     // a4
     void druckeBrett(Spielfeld spielfeld) {
-        Turtle newTurtle = initTurtle();
+        if (turtle == null) {
+            turtle = initTurtle();
+            zeichneInfo(spielfeld); 
 
-        zeichneBrett(newTurtle, quadratGroesse);
+        } else {
+            turtle.reset(); 
+            turtle = initTurtle();   
+        }
+        if(!spielfeld.istSpielAmEnde()){
+            infoTurtle.reset();
+            zeichneInfo(spielfeld); 
+        }else{
+            zeichneInfo(spielfeld); 
+        }
+        zeichneBrett();         
+        steinSetzen(spielfeld);  
+    }
+    
+    // a4
 
+    void steinSetzen(Spielfeld spielfeld){
         for (int i = 0; i < 64; i++) {
             switch (spielfeld.getFeld()[i]) {
 
                 case -1:
-                    zeichneStein(newTurtle, i, quadratGroesse, 0, 0, 0);
+                    zeichneStein(i, quadratGroesse, 0, 0, 0);
                     break;
                 case 1:
-                    zeichneStein(newTurtle, i, quadratGroesse, 255, 255, 255);
+                    zeichneStein(i, quadratGroesse, 255, 255, 255);
                     break;
                 case 2:
-                    zeichneKoenigen(newTurtle, i, quadratGroesse, 255, 255, 255);
+                    zeichneKoenigen(i, quadratGroesse, 255, 255, 255);
                     break;
                 case -2:
-                    zeichneKoenigen(newTurtle, i, quadratGroesse, 0, 0, 0);
+                    zeichneKoenigen(i, quadratGroesse, 0, 0, 0);
                     break;
                 default:
                     break;
             }
 
         }
-
-        zeichneInfo(spielfeld);
     }
-     // a4
 
     void zeichneInfo(Spielfeld spielfeld) {
-
+        
         int besterpunktestand = spielfeld.getBestenPunktestandVerwalten().getBesterPunktestand();
-        int spPunkte = spielfeld.getSpieler1().getPunkte(); 
+        int spPunkte = spielfeld.getSpieler1().getPunkte();
         int spSteine = spielfeld.getSpieler1().getAnzahlStein();
-        int kiPunkte = spielfeld.getSpieler2().getPunkte(); 
+        int kiPunkte = spielfeld.getSpieler2().getPunkte();
         int kiSteine = spielfeld.getSpieler2().getAnzahlStein();
 
         if (spielfeld.istSpielAmEnde()) {
             Turtle newInfoTurtle = new Turtle(480, 100);
-
             String text = "Der Gewinner ist " + spielfeld.getGewinner();
             String text2 = "Der Besterpunktestand: " + besterpunktestand;
             newInfoTurtle.penUp();
@@ -189,7 +203,6 @@ public class DameView {
             return;
 
         } else {
-            Turtle infoTurtle = new Turtle(480, 60);
 
             String spInfoText = "Spieler 1: Mensch      Punkte: " + spPunkte + "    Steine: " + spSteine;
             String kiInfoText = "Spieler 2: KI               Punkte: " + kiPunkte + "    Steine: " + kiSteine;
