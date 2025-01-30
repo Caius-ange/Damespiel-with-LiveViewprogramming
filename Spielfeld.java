@@ -84,10 +84,10 @@ class Spieler {
 
 public class Spielfeld {
     private final int[] feld;
-    Spieler spieler1;
-    Spieler spieler2;
+    private Spieler spieler1;
+    private Spieler spieler2;
     int turn; // 1 fuer Weiß, -1 fuer Schwarz
-    BestenPunktestandVerwalten best;
+    private BestenPunktestandVerwalten best;
 
     public Spielfeld() {
         spieler1 = new Spieler("spieler_1", Stein.WEISS_STEIN, false);
@@ -513,20 +513,30 @@ class MinimaxSpieler {
         
         for (int i = 0; i < 64; i++) {
             if (spielfeld.getFeld()[i] != 0 && spielfeld.istSteinDesSpielers(spielfeld.getFeld()[i])) {
-                int[] zuege = spielfeld.zeigeZugMoeglichkeit(i);
+                int[] zuege;
+                try {
+                    zuege = spielfeld.zeigeZugMoeglichkeit(i);
+                } catch (IllegalArgumentException e) {
+                    continue; // Überspringen, wenn keine Züge möglich
+                }
                 
                 for (int ziel : zuege) {
+                    // Prüfen, ob der Zug diagonal und innerhalb des Spielfelds ist
+                    if (!spielfeld.istGueltigeDiagonale(i, ziel)) {
+                        continue;
+                    }
+                    
                     Spielfeld kopie = kopiereSpielfeld(spielfeld);
                     try {
                         kopie.steinBewegen(i, ziel);
                         int wert = minimax(kopie, MAX_TIEFE - 1, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
-                        
                         if (wert > besterWert) {
                             besterWert = wert;
                             besterZug = new int[]{i, ziel};
                         }
                     } catch (IllegalArgumentException e) {
-                        // Ungültiger Zug ignorieren
+                        continue;       // Ungültiger Zug ignorieren
+
                     }
                 }
             }
@@ -534,7 +544,6 @@ class MinimaxSpieler {
         
         return besterZug;
     }
-
     private static boolean istSpielerStein(Spielfeld spielfeld, int pos) {
         boolean istSchwarz = spielfeld.getAktuellerSpieler().getFarbe() == Stein.SCHWARTZ_STEIN;
         return istSchwarz ? spielfeld.getFeld()[pos] < 0 : spielfeld.getFeld()[pos] > 0;
@@ -542,14 +551,11 @@ class MinimaxSpieler {
 
     private static int[] getGueltigeZuege(Spielfeld spielfeld, int pos) {
         try {
-            int[] zuege = spielfeld.zeigeZugMoeglichkeit(pos);
-            // Filtrer les zuegs valides
-            return Arrays.stream(zuege)
+            int[] ursprungZuege = spielfeld.zeigeZugMoeglichkeit(pos);
+            return Arrays.stream(ursprungZuege)
                 .filter(ziel -> {
                     try {
-                        Spielfeld testSpielfeld = new Spielfeld();
-                        System.arraycopy(spielfeld.getFeld(), 0, testSpielfeld.getFeld(), 0, 64);
-                        synchronisiereSpieler(spielfeld, testSpielfeld);
+                        Spielfeld testSpielfeld = kopiereSpielfeld(spielfeld);
                         testSpielfeld.steinBewegen(pos, ziel);
                         return true;
                     } catch (IllegalArgumentException e) {
